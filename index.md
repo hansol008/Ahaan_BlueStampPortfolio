@@ -62,6 +62,7 @@ For my starter project, I decided to build the Weevil Eye. The purpose of the We
 
 ## Components Used
 - WeevilEye PCB : the board that connects all the components together
+
 - LEDs: A component that lights up when electricity passes through
 - Resistors: a component that resists the flow of electricity
 - Miniature Photocell: A compoment used to detect wether there is light
