@@ -53,6 +53,23 @@ For your first milestone, describe what your project is and how you plan to buil
 - Challenges you're facing and solving in your future milestones
 - What your plan is to complete your project
 
+# Starter Project - Weevil Eye
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/CaCazFBhYKs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+# Summary
+For my starter project, I decided to build the Weevil Eye. The purpose of the Weevil Eye is to light up when it's dark, using a light senestive photosensor, which only let current pass through when there was no light. I constructed the Weevil Eye by soldering the different comopnents to the PCB. The main understadning points for this project was for me to practice soldering, and learn how to put a circut together.
+
+# Components Used
+-WeevilEye PCB : the board that connects all the components together
+-LEDs: A component that lights up when electricity passes through
+-Resistors: a component that resists the flow of electricity
+-Miniature Photocell: A compoment used to detect wether there is light
+-20mm Coin Cell Battery Holder : connection between the battery and PCB
+-20mm Coin Cell Battery : the powersource for the Weevil Eye
+-2N3904 Transistor : a device that regulates electricity flow and can act as a switch
+
+
 # Schematics 
 Here's where you'll put images of your schematics. [Tinkercad](https://www.tinkercad.com/blog/official-guide-to-tinkercad-circuits) and [Fritzing](https://fritzing.org/learning/) are both great resoruces to create professional schematic diagrams, though BSE recommends Tinkercad becuase it can be done easily and for free in the browser. 
 
