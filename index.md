@@ -88,11 +88,14 @@ To watch the BSE tutorial on how to create a portfolio, click here.
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/9kMi62yegL4?si=SjV1ctFakXZa0eug" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-<img src="weevil1.png" width="200" height="200">
-<img src="weevilschem.png" width="200" height="200">
-
 ## Summary
 For my starter project, I decided to build the Weevil Eye. The purpose of the Weevil Eye is to light up when it's dark, using a light senestive photosensor, which only let current pass through when there was no light. I constructed the Weevil Eye by soldering the different comopnents to the PCB. The main understadning points for this project was for me to practice soldering, and learn how to put a circut together.
+
+<img src="weevil1.png" width="200" height="200">
+Source: Weevil Eye - SparkFun
+<img src="weevilschem.png" width="200" height="200">
+Source: Weevil Eye - SparkFun
+
 
 ## Components Used
 - WeevilEye PCB : the board that connects all the components together
