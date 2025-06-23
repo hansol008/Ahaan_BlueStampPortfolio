@@ -1,11 +1,5 @@
 # Ball Tracking Robot
-Replace this text with a brief description (2-3 sentences) of your project. This description should draw the reader in and make them interested in what you've built. You can include what the biggest challenges, takeaways, and triumphs from completing the project were. As you complete your portfolio, remember your audience is less familiar than you are with all that your project entails!
-
-You should comment out all portions of your portfolio that you have not completed yet, as well as any instructions:
-```HTML 
-<!--- This is an HTML comment in Markdown -->
-<!--- Anything between these symbols will not render on the published site -->
-```
+This project is a robot that tracks balls using computer vision (like a camera seeing colors) with called OpenCV, a computer vision library. It's built with a Raspberry Pi , a camera to track colors, motors to move its wheels, and sensors to stop it from bumping into things. Using color tracking, the robot will track a ball of a predertimed color, and move towards it.
 
 | **Engineer** | **School** | **Area of Interest** | **Grade** |
 |:--:|:--:|:--:|:--:|
