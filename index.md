@@ -3,9 +3,8 @@ This project is a robot that tracks balls using computer vision (like a camera s
 
 | **Engineer** | **School** | **Area of Interest** | **Grade** |
 |:--:|:--:|:--:|:--:|
-| Ahaan P | Fremont Highschool | Mechanical Engineering | Incoming Junior
+| Ahaan P | Fremont High School | Mechanical Engineering | Incoming Junior
 
-**Replace the BlueStamp logo below with an image of yourself and your completed project. Follow the guide [here](https://tomcam.github.io/least-github-pages/adding-images-github-pages-site.html) if you need help.**
 
 <img src="AhaanP2.png" width="350" height="400">
 
