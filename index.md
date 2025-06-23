@@ -92,8 +92,11 @@ To watch the BSE tutorial on how to create a portfolio, click here.
 For my starter project, I decided to build the Weevil Eye. The purpose of the Weevil Eye is to light up when it's dark, using a light senestive photosensor, which only let current pass through when there was no light. I constructed the Weevil Eye by soldering the different comopnents to the PCB. The main understadning points for this project was for me to practice soldering, and learn how to put a circut together.
 
 <img src="weevil1.png" width="200" height="200">
+
 <a href="[https://www.example.com](https://www.sparkfun.com/sparkfun-weevileye-beginner-soldering-kit.html)">Source: Weevil Eye</a>
+
 <img src="weevilschem.png" width="200" height="200">
+
 <a href="[https://www.example.com](https://cdn.sparkfun.com/datasheets/Kits/Weevil_Eye-v16.pdf)">Source: Weevil Eye Schematic</a>
 
 
