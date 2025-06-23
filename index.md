@@ -93,9 +93,11 @@ For my starter project, I decided to build the Weevil Eye. The purpose of the We
 
 <img src="weevil1.png" width="200" height="200">
 
+
 <a href="[https://www.example.com](https://www.sparkfun.com/sparkfun-weevileye-beginner-soldering-kit.html)">Source: Weevil Eye</a>
 
 <img src="weevilschem.png" width="200" height="200">
+
 
 <a href="[https://www.example.com](https://cdn.sparkfun.com/datasheets/Kits/Weevil_Eye-v16.pdf)">Source: Weevil Eye Schematic</a>
 
