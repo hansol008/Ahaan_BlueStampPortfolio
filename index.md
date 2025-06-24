@@ -40,13 +40,13 @@ For your second milestone, explain what you've worked on since your previous mil
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/4aHEpxQXCT8?si=oDebvNL3SYIfXqwK" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-##Summary
+## Summary
 .I've made some good progress on the technical side. I successfully installed the Raspberry Pi OS onto a 32 GB card. That was a bit of a hiccup at first because I accidentally installed the Mac version, so I had to reset the SD card and reinstall it. After that, I got the camera installed on the Raspberry Pi. This camera is  important because it's what the robot will use to see its surroundings, find the ball, and then move towards it. I'm using the lib camera command to view the live feed, which is run in the raspberry pi terminal.
 
-##Challanges
+## Challanges
 I definitely faced a couple of challenges. The incorrect OS installation was one, but I got that sorted. The other main one was with camera command compatibility. My Raspberry Pi is a Module 4B, and it turns out the camera commands are different from the regular Module 4, which uses different commands. I had to do some digging to find the correct commands to get everything working properly.
 
-##Next Steps
+## Next Steps
 Looking ahead, my next big milestone is to build the actual drive base of the robot, including getting the motors set up. After that, I'll need to mount the Raspberry Pi and the camera onto the robot's drive base 
 
 
