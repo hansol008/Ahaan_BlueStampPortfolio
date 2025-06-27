@@ -25,15 +25,9 @@ For your final milestone, explain the outcome of your project. Key details to in
 -->
 # Second Milestone
 
-**Don't forget to replace the text below with the embedding for your milestone video. Go to Youtube, click Share -> Embed, and copy and paste the code to replace what's below.**
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/y3VAmNlER5Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/O2dyLsmRVgA?si=IcNODJyqyDdQhVPl" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-For your second milestone, explain what you've worked on since your previous milestone. You can highlight:
-- Technical details of what you've accomplished and how they contribute to the final goal
-- What has been surprising about the project so far
-- Previous challenges you faced that you overcame
-- What needs to be completed before your final milestone
 ## Summary
 For my second milestone, i had to connect all the different components together and run some test code for it. First, I coded picamera testing code, to make sure the camera could run a live feed through python code and not the terminal, which is what i did for the first milestone. I also assembled the drivebase, which consisted of two motors, a switch and a battery pack. I soldered wires to the motor, and connected the other end to the h bridge. An h bridge is a board that controls the direction of current for two terminal components. Two terminal components are components with an current in terminal and a current out terminal. Some two terminal devices that I am using are motors and the battery pack. I hooked up the h bridge to the raspberry pi by connecting it to the GPIO pins(General purpose in/out pins). This lets the raspberry pi give code to the motors and control them. I wrote code to test the motors, and ran them off the raspberry pi. My motors are going to be used to move the robot towards the ball.
 
