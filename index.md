@@ -22,7 +22,7 @@ For your final milestone, explain the outcome of your project. Key details to in
 - What you hope to learn in the future after everything you've learned at BSE
 
 
-
+-->
 # Second Milestone
 
 **Don't forget to replace the text below with the embedding for your milestone video. Go to Youtube, click Share -> Embed, and copy and paste the code to replace what's below.**
@@ -33,8 +33,21 @@ For your second milestone, explain what you've worked on since your previous mil
 - Technical details of what you've accomplished and how they contribute to the final goal
 - What has been surprising about the project so far
 - Previous challenges you faced that you overcame
-- What needs to be completed before your final milestone 
--->
+- What needs to be completed before your final milestone
+## Summary
+For my second milestone, i had to connect all the different components together and run some test code for it. First, I coded picamera testing code, to make sure the camera could run a live feed through python code and not the terminal, which is what i did for the first milestone. I also assembled the drivebase, which consisted of two motors, a switch and a battery pack. I soldered wires to the motor, and connected the other end to the h bridge. An h bridge is a board that controls the direction of current for two terminal components. Two terminal components are components with an current in terminal and a current out terminal. Some two terminal devices that I am using are motors and the battery pack. I hooked up the h bridge to the raspberry pi by connecting it to the GPIO pins(General purpose in/out pins). This lets the raspberry pi give code to the motors and control them. I wrote code to test the motors, and ran them off the raspberry pi. My motors are going to be used to move the robot towards the ball.
+
+Then, I connected a breadboard to the raspberry pi, so i could connect an ultrasonic sensor. An ultrasonic sensor detects distance by sending out pules of high pitch frequencies and recieving them, then calculating distance by timing how long the pulse takes to reach the sensor. I had to add a voltage divider, to reduce the voltage of the output of the ultrasonic sensor, so that the raspberry pi can recieve it. The ultrasonic sensor sends out data at 5V, and the raspberry pi only takes in 3.3V, so a voltage divider, which is a set up of 2 resistors(1k ohms and 2k ohms) to reduce the voltage to 3.3V. I wrote test code for the ultrasonic sensor, and I was able to get that working. The ultrasonic sensor will be used to find the distance from the robot to the ball, and tell the motors how far to move.
+
+Finally, I needed to code basic color detection for my raspberry pi. I did this by creating a color mask, where i assigned lower and higher bound pixel values, so when the camera displays its feed, the code filters out the pixels that don't fall between the values. Pixels that fall in between the values appear white, while the rest appear black. The code bascially filters the color of each pixel and keeps whichever ones meet the values I put. I chose to filter for the color red, because thats the color of my ball. The camera will be used to see the ball, and detect it from its surroundings.
+
+## Challenges
+Since there were so many components that had to work, there were a few challenges I faced. First, the testing code provided by the previous student was outdated, so I had to change certain variables and methods to use newer functions. I also had a few problems with my motors. I had the motor wires in opposite terminals on my h bridge, so each wheel would spin in opposite directions. After that quick fix, I had to troubleshoot by ultrasonic sensor. My raspberry pi was not detecting the sensor, and after rewriting the code, I found that I called my pins twice, and the second time the pins were switched. After that, I had to tinker with the upper/lower bound values for my color mask. If I changed my values too much, then no colors were detected, or everything was detected as red. After playing around with it, I was able to get some values that worked well enough for my use.
+
+## Next steps
+My next steps will be to mount everything to the drive base, and to write code that gets all the components working in unison.
+
+
 # First Milestone
 
 
