@@ -8,10 +8,9 @@ This project is a robot that tracks balls using computer vision (like a camera s
 
 <img src="AhaanP2.png" width="350" height="400">
 
-<!--
-# Final Milestone
 
-**Don't forget to replace the text below with the embedding for your milestone video. Go to Youtube, click Share -> Embed, and copy and paste the code to replace what's below.**
+# Third Milestone
+
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/F7M7imOVGug" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
@@ -20,9 +19,11 @@ For your final milestone, explain the outcome of your project. Key details to in
 - What your biggest challenges and triumphs were at BSE
 - A summary of key topics you learned about
 - What you hope to learn in the future after everything you've learned at BSE
+## Summary
+For my third milestone, I needed to mount all my components I showed in the previous milestone onto the drive base. I also made code that combined the functionality of each component to track the ball.
+For the mounting, I first mounted my pi camera and ultrasonic sensor to the front of the drivebase. I fed the wires of the ultrasonicsensor through a hole and taped them to the drivebase usint 3M double sided tape. On the other side of the tape. Since the wires for the ultrasonic sensor are taped, the sensor was suspended and was stable. Then I stuck my pi camera right above the ultrasonic sensor, to make sure that the readings that the ultrasonic sensor were as close to the camera as possible. Then I mounted the raspberry pi behind the camera, to make sure that the camera's cable did not need to twist and bend. Then I mounted the power bank on top of the battery pack that poweres the motors. The battery pack ensures that the raspberry pi has power, and will let the robot move freely without having to be hooked up to a wall outlet.
 
 
--->
 # Second Milestone
 
 
