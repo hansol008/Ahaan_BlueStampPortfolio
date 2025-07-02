@@ -39,7 +39,7 @@ Finally, I needed to code basic color detection for my raspberry pi. I did this 
 Since there were so many components that had to work, there were a few challenges I faced. First, the testing code provided by the previous student was outdated, so I had to change certain variables and methods to use newer functions. I also had a few problems with my motors. I had the motor wires in opposite terminals on my h bridge, so each wheel would spin in opposite directions. After that quick fix, I had to troubleshoot by ultrasonic sensor. My raspberry pi was not detecting the sensor, and after rewriting the code, I found that I called my pins twice, and the second time the pins were switched. After that, I had to tinker with the upper/lower bound values for my color mask. If I changed my values too much, then no colors were detected, or everything was detected as red. After playing around with it, I was able to get some values that worked well enough for my use.
 
 ## Next steps
-My next steps will be to mount everything to the drive base, and to write code that gets all the components working in unison.
+My next steps will be to mount everything to the drive base, and to write code that can detect the red ball and have the robot move towards it.
 
 
 # First Milestone
