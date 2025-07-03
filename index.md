@@ -12,8 +12,7 @@ This project is a robot that tracks balls using computer vision (like a camera s
 # Third Milestone
 
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/F7M7imOVGug" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-
+<iframe width="560" height="315" src="https://www.youtube.com/embed/FoBqtvqutC4?si=Kx8xMMg17BJIcstW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 For your final milestone, explain the outcome of your project. Key details to include are:
 - What you've accomplished since your previous milestone
 - What your biggest challenges and triumphs were at BSE
@@ -21,7 +20,9 @@ For your final milestone, explain the outcome of your project. Key details to in
 - What you hope to learn in the future after everything you've learned at BSE
 ## Summary
 For my third milestone, I needed to mount all my components I showed in the previous milestone onto the drive base. I also made code that combined the functionality of each component to track the ball.
-For the mounting, I first mounted my pi camera and ultrasonic sensor to the front of the drivebase. I fed the wires of the ultrasonicsensor through a hole and taped them to the drivebase usint 3M double sided tape. On the other side of the tape. Since the wires for the ultrasonic sensor are taped, the sensor was suspended and was stable. Then I stuck my pi camera right above the ultrasonic sensor, to make sure that the readings that the ultrasonic sensor were as close to the camera as possible. Then I mounted the raspberry pi behind the camera, to make sure that the camera's cable did not need to twist and bend. Then I mounted the power bank on top of the battery pack that poweres the motors. The battery pack ensures that the raspberry pi has power, and will let the robot move freely without having to be hooked up to a wall outlet.
+For the mounting, I first mounted my pi camera and ultrasonic sensor to the front of the drivebase. I fed the wires of the ultrasonicsensor through a hole and taped them to the drivebase usint 3M double sided tape. Since the wires for the ultrasonic sensor are taped, the sensor was suspended and was stable. Then I stuck my pi camera right above the ultrasonic sensor, to make sure that the readings that the ultrasonic sensor were as close to the camera as possible. Then I mounted the raspberry pi behind the camera, to make sure that the camera's cable did not need to twist and bend. Then I mounted the power bank on top of the battery pack that poweres the motors. The battery pack ensures that the raspberry pi has power, and will let the robot move freely without having to be hooked up to a wall outlet.
+
+After mounting everything, I ran the same test code from the previous milestone to make sure all the components were still working. Then I got to writing code that would combine all the components. First, I had to detect the ball. I did this by scanning the color mask for the largest white space, which would represent a red object. Then I had to detect the area of the red object. I started this by looking at the past student's work, and learning that to detect the area, I had to code a 
 
 
 # Second Milestone
