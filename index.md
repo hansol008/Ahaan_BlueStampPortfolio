@@ -26,6 +26,318 @@ One challenge I faced was that if the ball was not in the frame, the robot would
 ## Next Steps
 For my next steps, I want to have a map of the robots movements to be drawn as it moves. I plan on doing this using turtle, a drawing library in python, and using an IMU(inertial measurement unit) which will be able to give the real direction of the robot.
 
+## Ball Tracking Code
+```python
+import cv2
+from picamera2 import Picamera2
+import time
+import numpy as np
+import RPi.GPIO as GPIO
+
+# --- Ultrasonic Sensor proximity parameters (centimeter) ---
+SENSOR_PROXIMITY = 20
+REROUTING_PROXIMITY = 17.5
+DISTANCE_THRESHOLD = 10 # cm: distance at which the robot should stop
+
+# --- Constants for Robot Behavior ---
+CENTER_TOLERANCE = 60 # Pixels: Defines a 40-pixel dead zone (20 pixels either side of center) for straight movement
+# Target area for a ball of approximately 0.058 m^2.
+# !!! IMPORTANT: THESE VALUES NEED CALIBRATION BASED ON YOUR CAMERA SETUP AND BALL'S DISTANCE. !!!
+# To calibrate: Run the script, place your ball at various distances, and observe the 'area' value
+# printed in the console. Adjust TARGET_CONTOUR_AREA_MIN and TARGET_CONTOUR_AREA_MAX accordingly.
+TARGET_CONTOUR_AREA_MIN = 4000 # Minimum pixel area for the ball
+TARGET_CONTOUR_AREA_MAX = 110000 # Maximum pixel area for the ball
+PARKED_AREA_THRESHOLD = 12000 # Area threshold for the 'parked' state (might need adjustment with new area values)
+
+# --- GPIO Setup ---
+# Add GPIO cleanup at the very beginning to ensure pins are released from previous runs
+GPIO.cleanup()
+GPIO.setwarnings(False) # Suppress warnings about GPIO channels already in use
+
+GPIO.setmode(GPIO.BCM)
+
+# Ultrasonic Sensor Pins (Only FRONT sensor remains)
+GPIO_TRIGGER = 16  # FRONT ultrasonic sensor
+GPIO_ECHO = 20
+
+# Motor Pins
+MOTOR1B = 6  # LEFT Motor
+MOTOR1E = 5
+MOTOR2B = 22 # RIGHT Motor
+MOTOR2E = 23
+
+# Set pins as output and input
+GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
+GPIO.setup(GPIO_ECHO, GPIO.IN)
+
+GPIO.setup(MOTOR1B, GPIO.OUT)
+GPIO.setup(MOTOR1E, GPIO.OUT)
+GPIO.setup(MOTOR2B, GPIO.OUT)
+GPIO.setup(MOTOR2E, GPIO.OUT)
+
+# Ensure trigger pin is low initially
+GPIO.output(GPIO_TRIGGER, False)
+
+# Allow modules to settle
+time.sleep(0.01)
+
+# --- Motor Control Functions ---
+def stop_motors():
+    """Stops both motors."""
+    GPIO.output(MOTOR1B, GPIO.LOW)
+    GPIO.output(MOTOR1E, GPIO.LOW)
+    GPIO.output(MOTOR2B, GPIO.LOW)
+    GPIO.output(MOTOR2E, GPIO.LOW)
+    print("Stopping All Motors")
+
+def move_forward():
+    """Moves both motors forward."""
+    GPIO.output(MOTOR1B, GPIO.HIGH)
+    GPIO.output(MOTOR1E, GPIO.LOW)
+    GPIO.output(MOTOR2B, GPIO.HIGH)
+    GPIO.output(MOTOR2E, GPIO.LOW)
+    print("Moving Forward")
+
+def move_reverse():
+    """Moves both motors backward."""
+    GPIO.output(MOTOR1B, GPIO.LOW)
+    GPIO.output(MOTOR1E, GPIO.HIGH)
+    GPIO.output(MOTOR2B, GPIO.LOW)
+    GPIO.output(MOTOR2E, GPIO.HIGH)
+    print("Moving Backward")
+
+def turn_left(turn_duration=0.08): # Reduced default turn duration
+    """Turns the robot left (right motor forward, left motor stopped) for a specified duration."""
+    GPIO.output(MOTOR1B, GPIO.LOW)
+    GPIO.output(MOTOR1E, GPIO.LOW)
+    GPIO.output(MOTOR2B, GPIO.HIGH)
+    GPIO.output(MOTOR2E, GPIO.LOW)
+    print(f"Turning Left for {turn_duration} seconds")
+    time.sleep(turn_duration)
+    stop_motors() # Stop after turning for the duration
+
+def turn_right(turn_duration=0.08): # Reduced default turn duration
+    """Turns the robot right (left motor forward, right motor stopped) for a specified duration."""
+    GPIO.output(MOTOR1B, GPIO.HIGH)
+    GPIO.output(MOTOR1E, GPIO.LOW)
+    GPIO.output(MOTOR2B, GPIO.LOW)
+    GPIO.output(MOTOR2E, GPIO.HIGH)
+    print(f"Turning Right for {turn_duration} seconds")
+    time.sleep(turn_duration)
+    stop_motors() # Stop after turning for the duration
+
+
+def back_left():
+    """Moves the robot backward and slightly left (right motor backward)."""
+    GPIO.output(MOTOR1B, GPIO.LOW)
+    GPIO.output(MOTOR1E, GPIO.LOW) # Left motor stopped
+    GPIO.output(MOTOR2B, GPIO.LOW)
+    GPIO.output(MOTOR2E, GPIO.HIGH) # Right motor backward
+    print("Back Left")
+
+def back_right():
+    """Moves the robot backward and slightly right (left motor backward)."""
+    GPIO.output(MOTOR1B, GPIO.LOW)
+    GPIO.output(MOTOR1E, GPIO.HIGH) # Left motor backward
+    GPIO.output(MOTOR2B, GPIO.LOW)
+    GPIO.output(MOTOR2E, GPIO.LOW) # Right motor stopped
+    print("Back Right")
+
+# --- Ultrasonic Sensor Function ---
+def get_sonar_distance(trigger_pin, echo_pin):
+    """Measures distance using an ultrasonic sensor in cm."""
+    GPIO.output(trigger_pin, True)
+    time.sleep(0.00001)
+    GPIO.output(trigger_pin, False)
+
+    pulse_start = time.time()
+    pulse_end = time.time()
+
+    timeout_start = time.time()
+    while GPIO.input(echo_pin) == 0:
+        pulse_start = time.time()
+        if time.time() - timeout_start > 0.1: # Timeout to prevent infinite loop
+            return -1
+
+    timeout_end = time.time()
+    while GPIO.input(echo_pin) == 1:
+        pulse_end = time.time()
+        if time.time() - timeout_end > 0.1: # Timeout to prevent infinite loop
+            return -1
+
+    pulse_duration = pulse_end - pulse_start
+    distance = (pulse_duration * 34300) / 2
+    return round(distance, 2)
+
+# This function is no longer needed with only one sensor.
+# def no_obstacle(distanceL, distanceC, distanceR):
+#     """Checks if there are no obstacles within SENSOR_PROXIMITY cm."""
+#     return (distanceL > SENSOR_PROXIMITY and
+#             distanceC > SENSOR_PROXIMITY and
+#             distanceR > SENSOR_PROXIMITY)
+
+# --- Image Analysis Functions ---
+def segment_colour(frame):
+    """Returns a mask with only the red colors in the frame."""
+    hsv_roi = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    lower_red = np.array([150, 140, 1])
+    upper_red = np.array([190, 255, 255])
+
+    mask = cv2.inRange(hsv_roi, lower_red, upper_red)
+
+    # Morphological operations for noise reduction and gap closing
+    kern_dilate = np.ones((8, 8), np.uint8)
+    kern_erode = np.ones((3, 3), np.uint8)
+    mask = cv2.erode(mask, kern_erode)     # Eroding
+    mask = cv2.dilate(mask, kern_dilate)   # Dilating
+
+    cv2.imshow('Red Mask', mask) # Shows mask (B&W screen with identified red pixels)
+    return mask
+
+def find_blob(blob):
+    """Returns the bounding box and area of the largest red object."""
+    largest_contour = 0
+    cont_index = 0
+    contours, hierarchy = cv2.findContours(blob, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+
+    r = (0, 0, 2, 2) # Default bounding box
+
+    if contours:
+        for idx, contour in enumerate(contours):
+            area = cv2.contourArea(contour)
+            if area > largest_contour:
+                largest_contour = area
+                cont_index = idx
+        r = cv2.boundingRect(contours[cont_index])
+    return r, largest_contour
+
+# --- Camera Setup ---
+print("Initializing Picamera2...")
+picam2 = Picamera2()
+
+# Configure the camera with XRGB8888 format
+picam2_config = picam2.create_preview_configuration(
+    main={"format": 'XRGB8888', "size": (640, 480)},
+    raw={"size": (1640, 1232)} # Optional: raw stream configuration
+)
+picam2.configure(picam2_config)
+
+# Start the camera
+picam2.start()
+print("Picamera2 started. Warming up...")
+time.sleep(2) # Give the camera a moment to warm up and set exposure
+
+# --- Global Flags for Navigation Logic ---
+flag = 0 # SEARCHING: 0: left turn for last location of ball, 1: right turn for last location of ball
+flag_reroute = -1 # REROUTE SEARCHING: -1: No reroute, 0: reroute left, 1: reroute right
+
+# --- Main Loop for Robot Navigation ---
+print("Starting robot navigation. Press 'q' to quit.")
+try:
+    while True:
+        # Capture a frame from the camera
+        frame = picam2.capture_array()
+        height, width, _ = frame.shape # Get frame dimensions
+
+        mask_red = segment_colour(frame)
+
+        # Find the largest red blob
+        loct, area = find_blob(mask_red)
+        x, y, w, h = loct
+
+        # Get distance from the front ultrasonic sensor
+        distanceC = get_sonar_distance(GPIO_TRIGGER, GPIO_ECHO) # Front
+
+        # Handle potential sensor errors (return -1)
+        if distanceC == -1: distanceC = 999
+
+        print(f"dC: {distanceC:.1f} cm")
+        print(f"Flag: {flag}, Reroute Flag: {flag_reroute}")
+        print(f"Detected Area: {area}")
+
+        found = 0
+        center_x = 0
+        center_y = 0
+
+        # Check if a significant red object is found and within the target area range
+        if TARGET_CONTOUR_AREA_MIN < area < TARGET_CONTOUR_AREA_MAX:
+            found = 1
+            # Draw bounding box and centroid
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2) # Green rectangle
+            center_x = x + (w // 2)
+            center_y = y + (h // 2)
+            cv2.circle(frame, (int(center_x), int(center_y)), 3, (0, 110, 255), -1) # Orange circle
+            cv2.putText(frame, f"Area: {area}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+
+        if found == 1:
+            print("Red object found.")
+
+            # --- Main Movement Logic ---
+            # 1. Check if the ball is too close (parking condition)
+            if distanceC < DISTANCE_THRESHOLD:
+                stop_motors()
+                cv2.putText(frame, "PARKED (TOO CLOSE)", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            else:
+                # 2. Ball is not too close, now check for front obstacle or track
+                if distanceC > SENSOR_PROXIMITY: # No front obstacle
+                    frame_center_x = width // 2
+                    if center_x < frame_center_x - CENTER_TOLERANCE:
+                        flag = 0 # Last seen on the left
+                        turn_left()
+                        cv2.putText(frame, "TURNING LEFT", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                    elif center_x > frame_center_x + CENTER_TOLERANCE:
+                        flag = 1 # Last seen on the right
+                        turn_right()
+                        cv2.putText(frame, "TURNING RIGHT", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                    else:
+                        # Object is relatively centered within the dead zone, move forward
+                        move_forward()
+                        cv2.putText(frame, "MOVING FORWARD", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                        # Update flag based on current center for future search if ball is lost
+                        if center_x < width // 2:
+                            flag = 0
+                        else:
+                            flag = 1
+                else:
+                    # Front Obstacle detected
+                    stop_motors()
+                    cv2.putText(frame, "FRONT OBSTACLE DETECTED", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
+                    
+                    # Since there's only one sensor, the rerouting logic will be simpler.
+                    # It will only respond to a direct front obstacle.
+                    move_reverse()
+                    cv2.putText(frame, "REVERSING FROM OBSTACLE", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
+                    time.sleep(0.5) # Reverse for a short duration
+                    stop_motors()
+
+        else: # Red object not found or not within area criteria
+            print("Red object not found or out of size range. Doing nothing.")
+            stop_motors() # Stop the robot if no red object is found and not reversing due to obstacle
+            cv2.putText(frame, "NO OBJECT / STOP", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+
+
+        # Display the frames
+        cv2.imshow("Robot View", frame) # Original camera feed with annotations
+
+        # Wait for a key press for 1ms. If 'q' is pressed, break the loop.
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+except Exception as e:
+    print(f"An error occurred: {e}")
+
+finally:
+    # --- Cleanup ---
+    print("Releasing resources and cleaning up GPIO...")
+    stop_motors() # Ensure motors are stopped before cleanup
+    picam2.stop()
+    picam2.close()
+    cv2.destroyAllWindows() # Close all OpenCV windows
+    GPIO.cleanup()
+    print("Application closed.")
+```
+
 
 # Second Milestone
 
