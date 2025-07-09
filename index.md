@@ -268,6 +268,8 @@ finally:
     print("Application closed.")
 
 ```
+Color Mask Result : 
+<img src="colormask.png" width="646" height="288">
 
 
 # First Milestone
