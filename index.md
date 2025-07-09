@@ -1,5 +1,5 @@
 # Ball Tracking Robot
-This project is a robot that tracks balls using computer vision (like a camera seeing colors) with called OpenCV, a computer vision library. It's built with a Raspberry Pi , a camera to track colors, motors to move its wheels, and sensors to stop it from bumping into things. Using color tracking, the robot will track a ball of a predertimed color, and move towards it.
+This project consists of a robot made using a drive base with motors, ultrasonic sensor, camera, and a Raspberry Pi, put together to make a robot that can track a red colored ball. By scanning for red objects, when the robot detects the ball, it moves towards it. When the robot does not detect a ball, it goes into scanning mode until it finds the ball.
 
 | **Engineer** | **School** | **Area of Interest** | **Grade** |
 |:--:|:--:|:--:|:--:|
