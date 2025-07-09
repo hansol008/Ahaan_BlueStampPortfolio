@@ -45,6 +45,230 @@ Since there were so many components that had to work, there were a few challenge
 ## Next steps
 My next steps will be to mount everything to the drive base, and to write code that can detect the red ball and have the robot move towards it.
 
+## Test Codes
+
+Ultrasonic Sensor test code : 
+```python
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+
+TRIG_PIN = 19
+ECHO_PIN = 26
+
+GPIO.setup(TRIG_PIN, GPIO.OUT)
+GPIO.setup(ECHO_PIN, GPIO.IN)
+
+def get_distance():
+    # Ensure the trigger pin is low initially
+    GPIO.output(TRIG_PIN, GPIO.LOW)
+    time.sleep(0.000002) # Short delay to ensure pulse is clean
+
+    # Trigger the sensor
+    GPIO.output(TRIG_PIN, GPIO.HIGH)
+    time.sleep(0.00001) # 10 us pulse
+    GPIO.output(TRIG_PIN, GPIO.LOW)
+
+    pulse_start = time.time()
+    pulse_end = time.time()
+
+    timeout_start = time.time()
+    while GPIO.input(ECHO_PIN) == 0:
+        pulse_start = time.time()
+        if time.time() - timeout_start > 0.1:
+            return -1
+
+    # Wait for the ECHO pin to go LOW (pulse end)
+    timeout_end = time.time()
+    while GPIO.input(ECHO_PIN) == 1:
+        pulse_end = time.time()
+        if time.time() - timeout_end > 0.1: # 100ms timeout for waiting for low
+            return -1 # Indicate an error or no object detected
+
+    pulse_duration = pulse_end - pulse_start
+
+    # Speed of sound is approx 343 meters/second = 34300 cm/second
+    # Distance = (time * speed) / 2 (because sound travels there and back)
+    distance = (pulse_duration * 34300) / 2
+    distance = round(distance, 2)
+
+    return distance
+
+try:
+    while True: # You might want to continuously read the distance
+        dist = get_distance()
+        if dist != -1:
+            print(f"Object is at {dist} cm from the ultrasonic sensor")
+        else:
+            print("No object detected or sensor error (check wiring/obstacles).")
+        time.sleep(0.5) # Read every half second
+except KeyboardInterrupt:
+    print("\nProgram interrupted by user. Cleaning up GPIO...")
+finally:
+    GPIO.cleanup()
+    print("GPIO cleanup complete. Program terminated.")
+```
+Motor Testing Code : 
+```python
+import RPi.GPIO as GPIO
+import cv2
+import numpy as np
+
+GPIO.setmode(GPIO.BCM)
+
+MOTOR1B = 6
+MOTOR1E = 5
+
+MOTOR2B = 22
+MOTOR2E = 23
+
+GPIO.setup(MOTOR1B, GPIO.OUT)
+GPIO.setup(MOTOR1E, GPIO.OUT)
+
+GPIO.setup(MOTOR2B, GPIO.OUT)
+GPIO.setup(MOTOR2E, GPIO.OUT)
+
+print("Motor Control Program Started.")
+print("Commands: 'w' (forward), 'a' (left), 's' (backward), 'd' (right), 'x' (stop).")
+print("Press Ctrl+C to exit.")
+
+try:
+    while True:
+        userInput = input("Enter command: ").strip().lower()
+
+        if userInput == 'w':
+            print("Moving Forward")
+            GPIO.output(MOTOR1B, GPIO.HIGH)
+            GPIO.output(MOTOR1E, GPIO.LOW)
+            GPIO.output(MOTOR2B, GPIO.HIGH)
+            GPIO.output(MOTOR2E, GPIO.LOW)
+
+        elif userInput == 'a':
+            print("Turning Left")
+            GPIO.output(MOTOR1B, GPIO.LOW)
+            GPIO.output(MOTOR1E, GPIO.LOW)
+            GPIO.output(MOTOR2B, GPIO.HIGH)
+            GPIO.output(MOTOR2E, GPIO.LOW)
+
+        elif userInput == 's':
+            print("Moving Backward")
+            GPIO.output(MOTOR1B, GPIO.LOW)
+            GPIO.output(MOTOR1E, GPIO.HIGH)
+            GPIO.output(MOTOR2B, GPIO.LOW)
+            GPIO.output(MOTOR2E, GPIO.HIGH)
+
+        elif userInput == 'd':
+            print("Turning Right")
+            GPIO.output(MOTOR1B, GPIO.HIGH)
+            GPIO.output(MOTOR1E, GPIO.LOW)
+            GPIO.output(MOTOR2B, GPIO.LOW)
+            GPIO.output(MOTOR2E, GPIO.LOW)
+
+        elif userInput == 'x':
+            print("Stopping All Motors")
+            GPIO.output(MOTOR1B, GPIO.LOW)
+            GPIO.output(MOTOR1E, GPIO.LOW)
+            GPIO.output(MOTOR2B, GPIO.LOW)
+            GPIO.output(MOTOR2E, GPIO.LOW)
+        else:
+            print("Invalid command. Please use 'w', 'a', 's', 'd', or 'x'.")
+
+except KeyboardInterrupt:
+    print("\nKeyboardInterrupt detected. Exiting program gracefully.")
+except Exception as e:
+    print(f"\nAn unexpected error occurred: {e}")
+finally:
+    GPIO.cleanup()
+    print("GPIO cleanup complete. Program terminated.")
+```
+Color Mask Code:
+```python
+import cv2
+from picamera2 import Picamera2
+import time
+import numpy as np # Import numpy for array operations and color definitions
+
+# --- Camera Setup ---
+print("Initializing Picamera2...")
+picam2 = Picamera2()
+
+# Configure the camera with XRGB8888 format
+# XRGB8888 is a 32-bit format where X is an unused byte (alpha channel placeholder)
+# OpenCV will typically interpret this as BGR, which is suitable for direct conversion to HSV
+picam2_config = picam2.create_preview_configuration(
+    main={"format": 'XRGB8888', "size": (640, 480)}, # Use XRGB8888 as per your code
+    raw={"size": (1640, 1232)} # Optional: raw stream configuration
+)
+picam2.configure(picam2_config)
+
+# Start the camera
+picam2.start()
+print("Picamera2 started. Warming up...")
+time.sleep(2) # Give the camera a moment to warm up and set exposure
+
+# --- Main Loop for Red Color Masking ---
+print("Starting real-time red color masking. Press 'q' to quit.")
+try:
+    while True:
+        # Capture a frame from the camera as a NumPy array
+        img = picam2.capture_array()
+
+        # The 'XRGB8888' format from picamera2 often gets interpreted as BGR by OpenCV.
+        # So, we convert from BGR to HSV.
+        hsv_frame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+        # --- Define Red Color Range in HSV ---
+        # Hue values in OpenCV range from 0-179.
+        # Red typically wraps around 0 and 179.
+        # So, we define two ranges for red:
+        # 1. Lower red: H (0-10), S (50-255), V (50-255)
+        # 2. Upper red: H (160-179), S (50-255), V (50-255)
+
+        # Lower bound for red color
+        lower_red1 = np.array([170, 100, 50])
+        upper_red1 = np.array([180, 255, 255])
+
+        # Upper bound for red color
+             # Create masks for the two red ranges
+        full_red_mask = cv2.inRange(hsv_frame, lower_red1, upper_red1)
+
+        # Combine the two masks to get the full red mask
+        # Bitwise OR operation combines the white pixels from both masks
+        
+
+        # Optional: Perform morphological operations on the mask
+        # This can help remove small noise and close small gaps, making the mask cleaner
+        kernel = np.ones((5, 5), np.uint8)
+        full_red_mask = cv2.erode(full_red_mask, kernel, iterations=1)
+        full_red_mask = cv2.dilate(full_red_mask, kernel, iterations=1)
+
+        # Apply the combined mask to the original frame
+        # This operation keeps only the pixels in 'img' where 'full_red_mask' is white (255)
+        #red_filtered_output = cv2.bitwise_and(img, img, mask=full_red_mask)
+
+        # Display the frames
+        cv2.imshow("Original Output", img) # Original camera feed
+        #cv2.imshow("Red Masked Output", red_filtered_output) # Only red objects visible
+        cv2.imshow("Red Mask", full_red_mask) # The binary mask itself
+
+        # Wait for a key press for 1ms. If 'q' is pressed, break the loop.
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+except Exception as e:
+    print(f"An error occurred: {e}")
+
+finally:
+    # --- Cleanup ---
+    print("Releasing resources...")
+    picam2.stop()
+    picam2.close()
+    cv2.destroyAllWindows() # Close all OpenCV windows
+    print("Application closed.")
+
+```
+
 
 # First Milestone
 
