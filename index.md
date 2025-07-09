@@ -287,7 +287,6 @@ Looking ahead, my next big milestone is to build the actual drive base of the ro
 ## Code
 ```python
 libcamera-hello -t 0
-
 ```
 
 
