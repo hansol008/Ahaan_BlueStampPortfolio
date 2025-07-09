@@ -60,6 +60,11 @@ I definitely faced a couple of challenges. The incorrect OS installation was one
 ## Next Steps
 Looking ahead, my next big milestone is to build the actual drive base of the robot, including getting the motors set up. After that, I'll need to mount the Raspberry Pi and the camera onto the robot's drive base 
 
+## Code
+```python
+libcamera-hello -t 0
+
+```
 
 
 
