@@ -632,7 +632,8 @@ void loop() {
 Here's where you'll list the parts in your project. To add more rows, just copy and paste the example rows below.
 Don't forget to place the link of where to buy each component inside the quotation marks in the corresponding row after href =. Follow the guide [here]([url](https://www.markdownguide.org/extended-syntax/)) to learn how to customize this to your project needs. 
 -->
-| **Part** | **Note** | **Price** | **Link** |
+| First Header  | Second Header | Third Header | Fourth Header |
+| ------------- | ------------- | ------------ | ------------- |
 | CanaKit Raspberry Pi 4 Complete Starter Kit |  Includes the Raspberry Pi 4B,32GB Samsung EVO+ MicroSD, Case, Fan, Power Supply, Heat Sinks, Micro HDMI to HDMI, USB MicroSD Card reader  | $119.99 | <a href="https://www.amazon.com/CanaKit-Raspberry-4GB-Starter-Kit/dp/B07V5JTMV9?th=1"> Link </a>  |
 | Raspberry Pi Camera Module  | The camera used for live video capture. | $14.99  | <a href="https://www.amazon.com/Arducam-Autofocus-Raspberry-Motorized-Software/dp/B07SN8GYGD/ref=sr_1_5?crid=3236VFT39VAPQ&keywords=picamera&qid=1689698732&s=electronics&sprefix=picamer%2Celectronics%2C138&sr=1-5"> Link </a>  |
 | L298N Driver Board (H-Bridge)  | Basic motor driver board which drives the wheels forward and backward. | $7.99  | <a href="https://www.amazon.com/Qunqi-Controller-Module-Stepper-Arduino/dp/B014KMHSW6/ref=dp_prsubs_d_sccl_2/138-9891916-5126421?pd_rd_w=kKzEb&content-id=amzn1.sym.be3a2f09-77ee-4ba3-b2da-1b73c76c3fe2&pf_rd_p=be3a2f09-77ee-4ba3-b2da-1b73c76c3fe2&pf_rd_r=PP36D9Q5WJZSCM48QJC5&pd_rd_wg=ZN2MF&pd_rd_r=ea0a28d0-83e1-4c04-a828-ce41712d9a1a&pd_rd_i=B014KMHSW6&psc=1"> Link </a>  |
