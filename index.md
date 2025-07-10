@@ -635,24 +635,24 @@ Don't forget to place the link of where to buy each component inside the quotati
 
 | **Part** | **Note** | **Price** | **Link** |
 | ------------- | ------------- | ------------- | ------------- |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
 | CanaKit Raspberry Pi 4 Complete Starter Kit |  Includes the Raspberry Pi 4B,32GB Samsung EVO+ MicroSD, Case, Fan, Power Supply, Heat Sinks, Micro HDMI to HDMI, USB MicroSD Card reader  | $119.99 | <a href="https://www.amazon.com/CanaKit-Raspberry-4GB-Starter-Kit/dp/B07V5JTMV9?th=1"> Link </a>  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
-|  | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Raspberry Pi Camera Module  | The camera used for live video capture.  | $14.99  | <a href="https://www.amazon.com/Arducam-Autofocus-Raspberry-Motorized-Software/dp/B07SN8GYGD/ref=sr_1_5?crid=3236VFT39VAPQ&keywords=picamera&qid=1689698732&s=electronics&sprefix=picamer%2Celectronics%2C138&sr=1-5"> Link </a>  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  | Content Cell  | Content Cell  |
 
 
 
 
-|Raspberry Pi Camera Module	|The camera used for live video capture.| $14.99 | <a href="https://www.amazon.com/Arducam-Autofocus-Raspberry-Motorized-Software/dp/B07SN8GYGD/ref=sr_1_5?crid=3236VFT39VAPQ&keywords=picamera&qid=1689698732&s=electronics&sprefix=picamer%2Celectronics%2C138&sr=1-5"> Link </a> |
+|	|The camera used for live video capture.| $14.99 | <a href="https://www.amazon.com/Arducam-Autofocus-Raspberry-Motorized-Software/dp/B07SN8GYGD/ref=sr_1_5?crid=3236VFT39VAPQ&keywords=picamera&qid=1689698732&s=electronics&sprefix=picamer%2Celectronics%2C138&sr=1-5"> Link </a> |
 |L298N Driver Board (H-Bridge)|Basic motor driver board which drives the wheels forward and backward.	| $7.99| <a href="https://www.amazon.com/Qunqi-Controller-Module-Stepper-Arduino/dp/B014KMHSW6/ref=dp_prsubs_d_sccl_2/138-9891916-5126421?pd_rd_w=kKzEb&content-id=amzn1.sym.be3a2f09-77ee-4ba3-b2da-1b73c76c3fe2&pf_rd_p=be3a2f09-77ee-4ba3-b2da-1b73c76c3fe2&pf_rd_r=PP36D9Q5WJZSCM48QJC5&pd_rd_wg=ZN2MF&pd_rd_r=ea0a28d0-83e1-4c04-a828-ce41712d9a1a&pd_rd_i=B014KMHSW6&psc=1"> Link </a> |
 |Motors and Board kit|Basic hardware pieces for structural assembly of the robot.| $13.99 | <a href="https://www.amazon.com/Smart-Chassis-Motors-Encoder-Battery/dp/B01LXY7CM3/ref=sr_1_4?crid=27ACD61NPNLO4&keywords=robot+car+kit&qid=1689698962&s=electronics&sprefix=robot+car+kit%2Celectronics%2C169&sr=1-4"> Link </a> |
 |Portable Power Bank|To power the Raspberry Pi without being plugged into the wall| $21.99 | <a href="https://www.amazon.com/INIU-High-Speed-Flashlight-Powerbank-Compatible/dp/B07CZDXDG8/ref=sr_1_3?crid=HXMNPENU9KF3&dib=eyJ2IjoiMSJ9.QKGsYnUA7w9IYsHtGbbDBgntDydTuPcQqWIoiPVNHV3K4PihUjQsjylRthVPXKduMXihISUbnOTSvYvSAkz3dLul8B1UPvRk_fLgZ7hSaD9YPAqtjGnvPPiYmuFtWlZwaG3OGj8mC2uANg0wKQJDsVhsneFLB63VPk4atKXzKCUAtgC8zceea_2wjqspwtP0nStkw_bJBq_O4d9K-8RZS9JFKKNYY5BSla2TQ6kUgBSnD68-Efl4JTYyr5_VGFtVY1_fRX-N4OnIMj4w3Jr1VnzR1FSE8Z0C1ZF0-bmhkFU.kHnJ5wlzxw7up9vTY21jzovNxnRUF-CUAsBXld-HzQ4&dib_tag=se&keywords=iniu%2Bpower%2Bbank&qid=1752179460&s=electronics&sprefix=iniu%2Bpower%2Bbank%2Celectronics%2C148&sr=1-3&th=1"> Link </a> |
