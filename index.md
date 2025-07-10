@@ -1,5 +1,5 @@
 # Ball Tracking Robot
-This project consists of a robot made using a drive base with motors, ultrasonic sensor, camera, and a Raspberry Pi, put together to make a robot that can track a red colored ball. By scanning for red objects, when the robot detects the ball, it moves towards it. When the robot does not detect a ball, it goes into scanning mode until it finds the ball.
+Our robot tracks red balls. A Raspberry Pi tells the robot how to move and what to do. The robot has a strong base with motors to help it move. It also has an ultrasonic sensor to find things in its way and a camera to spot red objects. The robot works like this: it constantly looks for red balls. When it sees one, it drives towards it on its own. If it doesn't see a ball, it keeps scanning until it finds one.
 
 | **Engineer** | **School** | **Area of Interest** | **Grade** |
 |:--:|:--:|:--:|:--:|
