@@ -633,8 +633,7 @@ Here's where you'll list the parts in your project. To add more rows, just copy 
 Don't forget to place the link of where to buy each component inside the quotation marks in the corresponding row after href =. Follow the guide [here]([url](https://www.markdownguide.org/extended-syntax/)) to learn how to customize this to your project needs. 
 -->
 | **Part** | **Note** | **Price** | **Link** |
-| ------------- | ------------- | ------------- | ------------- |
-
+| ---------------------------------- | ---------------------------------- | ---------------------------------- | ---------------------------------- |
 | CanaKit Raspberry Pi 4 Complete Starter Kit |  Includes the Raspberry Pi 4B,32GB Samsung EVO+ MicroSD, Case, Fan, Power Supply, Heat Sinks, Micro HDMI to HDMI, USB MicroSD Card reader  | $119.99 | <a href="https://www.amazon.com/CanaKit-Raspberry-4GB-Starter-Kit/dp/B07V5JTMV9?th=1"> Link </a>  |
 
 
