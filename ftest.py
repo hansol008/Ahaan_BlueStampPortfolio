@@ -1,3 +1,4 @@
+#v1.5
 import cv2
 from picamera2 import Picamera2
 import time
@@ -42,13 +43,9 @@ MOTOR_PINS = {
     "right_e": 23, # RIGHT Motor Enable (or Forward based on H-bridge setup)
 }
 
-# LED Pins for RGB LED (using the pins from the provided LED code)
-# Red LED connected to GPIO 13
-# Green LED connected to GPIO 17
-# Blue LED connected to GPIO 27 (not used in this specific logic but kept for consistency if needed later)
-LED_RED_PIN = 13
-LED_GREEN_PIN = 27
-LED_BLUE_PIN = 17f # Although not explicitly used for the red/green logic, we'll keep it defined.
+# LED Pins
+LED_SEARCH = 18
+LED_PARKED = 5
 
 # --- GPIO Setup ---
 def setup_gpio():
@@ -67,13 +64,9 @@ def setup_gpio():
     for pin in MOTOR_PINS.values():
         GPIO.setup(pin, GPIO.OUT)
 
-    # Setup RGB LED pins
-    GPIO.setup(LED_RED_PIN, GPIO.OUT)
-    GPIO.setup(LED_GREEN_PIN, GPIO.OUT)
-    GPIO.setup(LED_BLUE_PIN, GPIO.OUT) # Setup blue pin even if not actively controlled for red/green logic
-
-    # Ensure all LEDs are off initially
-    set_rgb_led_color(False, False, False)
+    # Setup LED pins
+    GPIO.setup(LED_SEARCH, GPIO.OUT)
+    GPIO.setup(LED_PARKED, GPIO.OUT)
 
     time.sleep(0.01) # Allow modules to settle
 
@@ -120,17 +113,6 @@ def back_left():
 
 def back_right():
     execute_movement("Back Right", GPIO.LOW, GPIO.HIGH, GPIO.LOW, GPIO.LOW, REVERSE_DELAY)
-
-# --- RGB LED Control Function ---
-def set_rgb_led_color(red_state, green_state, blue_state):
-    """
-    Sets the state of the RGB LED pins.
-    red_state, green_state, blue_state should be True/False (GPIO.HIGH/LOW).
-    Assumes common cathode RGB LED (HIGH turns on, LOW turns off).
-    """
-    GPIO.output(LED_RED_PIN, red_state)
-    GPIO.output(LED_GREEN_PIN, green_state)
-    GPIO.output(LED_BLUE_PIN, blue_state)
 
 # --- Ultrasonic Sensor Function ---
 def get_sonar_distance(trigger_pin, echo_pin, timeout=0.1):
@@ -256,18 +238,20 @@ def main():
                 # Draw bounding box and centroid
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 center_x = x + (w // 2)
+                # center_y = y + (h // 2) # Not used in logic, can be removed
                 cv2.circle(frame, (int(center_x), int(y + (h // 2))), 3, (0, 110, 255), -1)
                 cv2.putText(frame, f"Area: {area}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
             if found_object:
-                print("Red object found. Turning Green LED ON.")
-                set_rgb_led_color(False, True, False) # Green LED ON, Red/Blue OFF
+                print("Red object found.")
+                GPIO.output(LED_SEARCH, GPIO.HIGH)
+                GPIO.output(LED_PARKED, GPIO.LOW)
 
                 # 1. Check if the ball is too close (parking condition)
                 if distances["front"] < DISTANCE_THRESHOLD:
                     stop_motors()
-                    # Keep Green LED ON as object is still found/parked
-                    set_rgb_led_color(False, True, False)
+                    GPIO.output(LED_SEARCH, GPIO.LOW)
+                    GPIO.output(LED_PARKED, GPIO.HIGH)
                     cv2.putText(frame, "PARKED (TOO CLOSE)", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                 else:
                     # 2. Ball is not too close, now check for other obstacles or track
@@ -296,7 +280,8 @@ def main():
                         if distances["front"] < SENSOR_PROXIMITY and area >= PARKED_AREA_THRESHOLD:
                             # If the red object is directly in front and large enough, consider it parked
                             stop_motors()
-                            set_rgb_led_color(False, True, False) # Green LED ON
+                            GPIO.output(LED_SEARCH, GPIO.LOW)
+                            GPIO.output(LED_PARKED, GPIO.HIGH)
                             cv2.putText(frame, "PARKED (FRONT OBSTACLE)", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                         elif distances["left"] < REROUTING_PROXIMITY:
                             print("Rerouting right (Left obstacle)")
@@ -314,8 +299,9 @@ def main():
                             cv2.putText(frame, "REVERSING", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
 
             else: # Red object not found or not within area criteria
-                print("Red object not found or out of size range. Searching... Turning Red LED ON.")
-                set_rgb_led_color(True, False, False) # Red LED ON, Green/Blue OFF
+                GPIO.output(LED_SEARCH, GPIO.LOW)
+                GPIO.output(LED_PARKED, GPIO.LOW)
+                print("Red object not found or out of size range. Searching...")
                 stop_motors()
                 cv2.putText(frame, "SEARCHING", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 # Implement a simple search pattern
@@ -337,7 +323,8 @@ def main():
         # --- Cleanup ---
         print("Releasing resources and cleaning up GPIO...")
         stop_motors()
-        set_rgb_led_color(False, False, False) # Turn off all LEDs during cleanup
+        GPIO.output(LED_SEARCH, GPIO.LOW)
+        GPIO.output(LED_PARKED, GPIO.LOW)
         picam2.stop()
         picam2.close()
         cv2.destroyAllWindows()
