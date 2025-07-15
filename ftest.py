@@ -1,56 +1,57 @@
-#v1.5
+#v 1.6 with backing up and status led
 import cv2
 from picamera2 import Picamera2
 import time
 import numpy as np
 import RPi.GPIO as GPIO
 
+# Add GPIO.cleanup() here to ensure a clean slate on every run
+GPIO.cleanup() # <--- ADD THIS LINE
+
 # --- Configuration Constants ---
 # Sensor Proximity (centimeters)
 SENSOR_PROXIMITY = 2
 REROUTING_PROXIMITY = 17.5
-DISTANCE_THRESHOLD = 2  # cm: distance at which the robot should stop
+DISTANCE_THRESHOLD = 2    # cm: distance at which the robot should stop
+BACKUP_DIST = 12
 
 # Robot Behavior Constants
-CENTER_TOLERANCE = 80  # Pixels: Defines a 40-pixel dead zone for straight movement
-TARGET_CONTOUR_AREA_MIN = 5000  # Minimum pixel area for the ball
+CENTER_TOLERANCE = 160    # Pixels: Defines a 40-pixel dead zone for straight movement
+TARGET_CONTOUR_AREA_MIN = 2500    # Minimum pixel area for the ball
 TARGET_CONTOUR_AREA_MAX = 110000  # Maximum pixel area for the ball
-PARKED_AREA_THRESHOLD = 10000  # Area threshold for the 'parked' state
+PARKED_AREA_THRESHOLD = 10000     # Area threshold for the 'parked' state
 
 # Movement Delays (in seconds)
 # Adjust these values to control how long each action is performed.
 # Shorter delays: more responsive, potentially more erratic.
 # Longer delays: smoother, less responsive.
-FORWARD_DELAY = 0.15
-TURN_DELAY = 0.1
-REVERSE_DELAY = 0.2
-REROUTE_TURN_DELAY = 0.25
-PAUSE_AFTER_MOVEMENT = 0.01 # Small pause after stopping motors for stability
+FORWARD_DELAY = 0.1 # Reduced from 0.15
+TURN_DELAY = 0.02   # Reduced from 0.1
+REVERSE_DELAY = 0.1     # Reduced from 0.2
+REROUTE_TURN_DELAY = 0.1  # Reduced from 0.25
 
 # GPIO Pin Assignments
 # Ultrasonic Sensor Pins
 ULTRASONIC_PINS = {
-    "left": {"trigger": 19, "echo": 26},
-    "front": {"trigger": 16, "echo": 20},
-    "right": {"trigger": 11, "echo": 12},
+    "front": {"trigger": 16, "echo": 26},
 }
 
 # Motor Pins
 MOTOR_PINS = {
-    "left_b": 6,  # LEFT Motor Backward
-    "left_e": 5,  # LEFT Motor Enable (or Forward based on H-bridge setup)
+    "left_b": 6,    # LEFT Motor Backward
+    "left_e": 5,    # LEFT Motor Enable (or Forward based on H-bridge setup)
     "right_b": 22, # RIGHT Motor Backward
     "right_e": 23, # RIGHT Motor Enable (or Forward based on H-bridge setup)
 }
 
-# LED Pins
-LED_SEARCH = 18
-LED_PARKED = 5
+# RGB LED Pins (Common Cathode assumed: HIGH = ON, LOW = OFF)
+PIN_RED = 13
+PIN_GREEN = 17
+PIN_BLUE = 27
 
 # --- GPIO Setup ---
 def setup_gpio():
     """Sets up all GPIO pins."""
-    GPIO.cleanup()
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
 
@@ -64,11 +65,22 @@ def setup_gpio():
     for pin in MOTOR_PINS.values():
         GPIO.setup(pin, GPIO.OUT)
 
-    # Setup LED pins
-    GPIO.setup(LED_SEARCH, GPIO.OUT)
-    GPIO.setup(LED_PARKED, GPIO.OUT)
+    # Setup RGB LED pins
+    GPIO.setup(PIN_RED, GPIO.OUT)
+    GPIO.setup(PIN_GREEN, GPIO.OUT)
+    GPIO.setup(PIN_BLUE, GPIO.OUT)
 
     time.sleep(0.01) # Allow modules to settle
+
+# --- RGB LED Control Function ---
+def turn_on_color(red_state, green_state, blue_state):
+    """
+    Sets the state of the RGB LED pins.
+    Assumes common cathode (LED connected to GND, and GPIO pulls high to turn on).
+    """
+    GPIO.output(PIN_RED, red_state)
+    GPIO.output(PIN_GREEN, green_state)
+    GPIO.output(PIN_BLUE, blue_state)
 
 # --- Motor Control Functions ---
 def set_motor_state(motor_b_pin, motor_e_pin, state_b, state_e):
@@ -88,7 +100,7 @@ def execute_movement(action_name, left_b_state, left_e_state, right_b_state, rig
     set_motor_state(MOTOR_PINS["right_b"], MOTOR_PINS["right_e"], right_b_state, right_e_state)
     time.sleep(delay)
     stop_motors()
-    time.sleep(PAUSE_AFTER_MOVEMENT)
+    time.sleep(0.0001)
 
 def move_forward():
     execute_movement("Forward", GPIO.HIGH, GPIO.LOW, GPIO.HIGH, GPIO.LOW, FORWARD_DELAY)
@@ -201,7 +213,7 @@ def main():
     setup_gpio()
     picam2 = setup_camera()
 
-    flag = 0  # SEARCHING: 0: left turn for last location of ball, 1: right turn for last location of ball
+    flag = 0    # SEARCHING: 0: left turn for last location of ball, 1: right turn for last location of ball
     flag_reroute = -1 # REROUTE SEARCHING: -1: No reroute, 0: reroute left, 1: reroute right
 
     print("Starting robot navigation. Press 'q' to quit.")
@@ -216,9 +228,7 @@ def main():
 
             # Get distances from ultrasonic sensors
             distances = {
-                "left": get_sonar_distance(ULTRASONIC_PINS["left"]["trigger"], ULTRASONIC_PINS["left"]["echo"]),
                 "front": get_sonar_distance(ULTRASONIC_PINS["front"]["trigger"], ULTRASONIC_PINS["front"]["echo"]),
-                "right": get_sonar_distance(ULTRASONIC_PINS["right"]["trigger"], ULTRASONIC_PINS["right"]["echo"]),
             }
 
             # Replace -1 (error/timeout) with a large value
@@ -226,7 +236,7 @@ def main():
                 if distances[key] == -1:
                     distances[key] = 999
 
-            print(f"dL: {distances['left']:.1f} cm, dC: {distances['front']:.1f} cm, dR: {distances['right']:.1f} cm")
+            print(f"dC: {distances['front']:.1f} cm")
             print(f"Flag: {flag}, Reroute Flag: {flag_reroute}")
             print(f"Detected Area: {area}")
 
@@ -238,24 +248,34 @@ def main():
                 # Draw bounding box and centroid
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 center_x = x + (w // 2)
-                # center_y = y + (h // 2) # Not used in logic, can be removed
                 cv2.circle(frame, (int(center_x), int(y + (h // 2))), 3, (0, 110, 255), -1)
                 cv2.putText(frame, f"Area: {area}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
+            if distances["front"] < BACKUP_DIST:
+                while distances["front"] < BACKUP_DIST:
+                    move_reverse()
+                    # Update distance measurement after each reverse movement
+                    distances["front"] = get_sonar_distance(
+                        ULTRASONIC_PINS["front"]["trigger"],
+                        ULTRASONIC_PINS["front"]["echo"]
+                    )
+                    if distances["front"] == -1:    # Handle timeout/error
+                        distances["front"] = 999
+                        break
+
             if found_object:
                 print("Red object found.")
-                GPIO.output(LED_SEARCH, GPIO.HIGH)
-                GPIO.output(LED_PARKED, GPIO.LOW)
+                turn_on_color(False, False, True) # Blue for searching/tracking
 
                 # 1. Check if the ball is too close (parking condition)
                 if distances["front"] < DISTANCE_THRESHOLD:
                     stop_motors()
-                    GPIO.output(LED_SEARCH, GPIO.LOW)
-                    GPIO.output(LED_PARKED, GPIO.HIGH)
+                    turn_on_color(False, True, False) # Green for parked
                     cv2.putText(frame, "PARKED (TOO CLOSE)", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                 else:
                     # 2. Ball is not too close, now check for other obstacles or track
-                    if all_clear(distances):
+                    # With only a front sensor, "all_clear" now just checks the front
+                    if distances["front"] > SENSOR_PROXIMITY:
                         # No general obstacles, track the ball by turning or moving forward
                         frame_center_x = width // 2
                         if center_x < frame_center_x - CENTER_TOLERANCE:
@@ -275,32 +295,22 @@ def main():
                     else:
                         # Obstacle detected (other than the ball being too close for parking)
                         stop_motors()
+                        turn_on_color(False, False, False) # LEDs off for obstacle
                         cv2.putText(frame, "OBSTACLE DETECTED", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
 
                         if distances["front"] < SENSOR_PROXIMITY and area >= PARKED_AREA_THRESHOLD:
                             # If the red object is directly in front and large enough, consider it parked
                             stop_motors()
-                            GPIO.output(LED_SEARCH, GPIO.LOW)
-                            GPIO.output(LED_PARKED, GPIO.HIGH)
+                            turn_on_color(False, True, False) # Green for parked
                             cv2.putText(frame, "PARKED (FRONT OBSTACLE)", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-                        elif distances["left"] < REROUTING_PROXIMITY:
-                            print("Rerouting right (Left obstacle)")
-                            back_right()
-                            flag_reroute = 1
-                            move_forward()
-                        elif distances["right"] < REROUTING_PROXIMITY:
-                            print("Rerouting left (Right obstacle)")
-                            back_left()
-                            flag_reroute = 0
-                            move_forward()
                         else:
-                            # General reverse if obstacle is not specifically left/right for rerouting
+                            # With only a front sensor, if an obstacle is detected and it's not the ball for parking,
+                            # the robot can only reverse or turn to try and clear it.
                             move_reverse()
-                            cv2.putText(frame, "REVERSING", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
+                            cv2.putText(frame, "REVERSING FROM OBSTACLE", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
 
             else: # Red object not found or not within area criteria
-                GPIO.output(LED_SEARCH, GPIO.LOW)
-                GPIO.output(LED_PARKED, GPIO.LOW)
+                turn_on_color(True, False, False) # LEDs off when object is lost or out of range
                 print("Red object not found or out of size range. Searching...")
                 stop_motors()
                 cv2.putText(frame, "SEARCHING", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
@@ -323,8 +333,7 @@ def main():
         # --- Cleanup ---
         print("Releasing resources and cleaning up GPIO...")
         stop_motors()
-        GPIO.output(LED_SEARCH, GPIO.LOW)
-        GPIO.output(LED_PARKED, GPIO.LOW)
+        turn_on_color(False, False, False) # Ensure all LEDs are off on exit
         picam2.stop()
         picam2.close()
         cv2.destroyAllWindows()
