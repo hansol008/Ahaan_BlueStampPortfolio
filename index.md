@@ -28,7 +28,7 @@ For my next steps, I want to have a map of the robots movements to be drawn as i
 
 ## Ball Tracking Code
 <pre style="background:#fdfdfd; border:none; height:40pc">
-```python
+#PYTHON
 import cv2
 from picamera2 import Picamera2
 import time
@@ -363,7 +363,7 @@ def main():
 
 if __name__ == "__main__":
     main()
-```
+</pre>
 
 
 # Second Milestone
