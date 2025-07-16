@@ -27,6 +27,7 @@ One challenge I faced was that if the ball was not in the frame, the robot would
 For my next steps, I want to have a map of the robots movements to be drawn as it moves. I plan on doing this using turtle, a drawing library in python, and using an IMU(inertial measurement unit) which will be able to give the real direction of the robot.
 
 ## Ball Tracking Code
+<pre style="background:#fdfdfd; border:none; height:40pc">
 ```python
 import cv2
 from picamera2 import Picamera2
