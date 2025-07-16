@@ -386,8 +386,9 @@ My next steps will be to mount everything to the drive base, and to write code t
 
 ## Test Codes
 
-Ultrasonic Sensor test code : 
-```python
+Ultrasonic Sensor test code :
+<pre style="background:#fdfdfd; border:none; height:40pc">
+#PYTHoN
 import RPi.GPIO as GPIO
 import time
 
@@ -520,9 +521,11 @@ except Exception as e:
 finally:
     GPIO.cleanup()
     print("GPIO cleanup complete. Program terminated.")
-```
+</pre>
+
 Color Mask Code:
-```python
+<pre style="background:#fdfdfd; border:none; height:40pc">
+#Python
 import cv2
 from picamera2 import Picamera2
 import time
@@ -606,7 +609,7 @@ finally:
     cv2.destroyAllWindows() # Close all OpenCV windows
     print("Application closed.")
 
-```
+</pre>
 Color Mask Result : 
 
 
