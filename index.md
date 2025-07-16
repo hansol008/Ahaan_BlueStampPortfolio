@@ -6,7 +6,7 @@ I am building a robot that can follow a red ball. Using a Raspberry Pi, Pi Camer
 | Ahaan P | Fremont High School | Mechanical Engineering | Incoming Junior
 
 
-<img src="AhaanP2.png" width="350" height="400">
+<img src="Portfolio Images/AhaanP2.png" width="350" height="400">
 
 
 # Third Milestone
