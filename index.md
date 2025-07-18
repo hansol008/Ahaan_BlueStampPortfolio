@@ -639,7 +639,7 @@ libcamera-hello -t 0
 
 
 # Schematics
-<img src="superduperfinal.png" width="827" height="893">
+<img src="newerschem.png" width="862" height="963">
 All of the conenctions shown on the schematic have been implemented in the code, and use the same pins.
 Note: Voltage dividers MUST be used for the RGB LED, and Ultrasonic Sensor
 
