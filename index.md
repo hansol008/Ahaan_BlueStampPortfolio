@@ -1,5 +1,5 @@
 # Ball Tracking Robot
-I am building a robot that can follow a red ball. Using a Raspberry Pi, Pi Camera, motors, an ultrasonic sensor, and code, the robot scans for red objects and goes toward the object. If the robot cannot find anything red, then the robot will enter a scanning mode, spinning in a circle until it finds a red object. If the robot detects something too close to it, it will back up and continue searching for the ball. Using two speed measuring modules, I will also have the robot print a map of its movements.
+I am building a robot that can follow a red ball. Using a Raspberry Pi, Pi Camera, motors, an ultrasonic sensor, and code, the robot scans for red objects and goes toward the object. If the robot cannot find anything red, then the robot will enter a scanning mode, spinning in a circle until it finds a red object. If the robot detects something too close to it, it will back up and continue searching for the ball. Using two speed measuring modules, I will also have the robot print a map of its movements using speed sensors to measure motor movement.
 
 | **Engineer** | **School** | **Area of Interest** | **Grade** |
 |:--:|:--:|:--:|:--:|
