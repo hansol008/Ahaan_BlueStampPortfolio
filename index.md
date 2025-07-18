@@ -640,7 +640,25 @@ libcamera-hello -t 0
 
 # Schematics
 <img src="superduperfinal.png" width="827" height="893">
-Here's where you'll put images of your schematics. [Tinkercad](https://www.tinkercad.com/blog/official-guide-to-tinkercad-circuits) and [Fritzing](https://fritzing.org/learning/) are both great resoruces to create professional schematic diagrams, though BSE recommends Tinkercad becuase it can be done easily and for free in the browser. 
+All of the conenctions shown on the schematic have been implemented in the code, and use the same pins.
+Note: Voltage dividers MUST be used for the RGB LED, and Ultrasonic Sensor
+
+### Ultrasonic Sensor:
+The resistor connected to GND is 2K Ohms
+The other Resistor before the GPIO wire is 1K Ohms
+
+### RGB LED: 
+#### Red (Resistors Top to Bottom):
+22 Ohms
+75 Ohms -> GPIO
+110 Ohms -> GND
+
+#### Green/Blue:
+165 Ohms
+(I used a 150 Ohm -> 15 Ohm resistor because I could not find 165 Ohm)
+
+
+
 <!--
 # Code
 Here's where you'll put your code. The syntax below places it into a block of code. Follow the guide [here]([url](https://www.markdownguide.org/extended-syntax/)) to learn how to customize it to your project needs. 
