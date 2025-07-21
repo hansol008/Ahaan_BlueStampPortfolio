@@ -27,6 +27,253 @@ Another challenge I faced was calculating the resistance values for the voltage 
 ## Next Steps
 For my next steps, I want to try to impliment obstacle detection, so that when the robot bumps into something, it puts a block on the map and avoids that area, similar to a self cleaning robot.
 
+## Code
+
+###LED testing
+<pre style="background:#fdfdfd; border:none; height:40pc"><code class = "language-python">import RPi.GPIO as GPIO
+import time
+
+# Pin Definitions
+# These are Broadcom (BCM) GPIO numbers, not physical pin numbers.
+# Red LED connected to GPIO 4
+# Green LED connected to GPIO 17
+# Blue LED connected to GPIO 27
+PIN_RED =13
+PIN_GREEN =17
+PIN_BLUE = 27
+
+def setup_gpio():
+    """
+    Sets up the GPIO mode and initializes the LED pins as outputs.
+    """
+    GPIO.setmode(GPIO.BCM)  # Use Broadcom GPIO numbers
+    GPIO.setwarnings(False) # Disable warnings for already set pins
+
+    # Set up each LED pin as an output
+    GPIO.setup(PIN_RED, GPIO.OUT)
+    GPIO.setup(PIN_GREEN, GPIO.OUT)
+    GPIO.setup(PIN_BLUE, GPIO.OUT)
+    print("GPIO setup complete.")
+
+def turn_on_color(red_state, green_state, blue_state):
+    """
+    Sets the state of the RGB LED pins.
+    For common cathode LEDs:
+    - High (True) means the LED is on.
+    - Low (False) means the LED is off.
+    This code now assumes common cathode (LED connected to GND, and GPIO pulls high to turn on).
+    If your LED is common anode (LED connected to VCC, and GPIO pulls low to turn on),
+    you'll need to re-add the 'not' operator to invert the states.
+    """
+    GPIO.output(PIN_RED, red_state)    # Removed 'not' for common cathode
+    GPIO.output(PIN_GREEN, green_state) # Removed 'not' for common cathode
+    GPIO.output(PIN_BLUE, blue_state)  # Removed 'not' for common cathode
+
+def cleanup_gpio():
+    """
+    Cleans up all GPIO settings, turning off all LEDs.
+    """
+    print("Cleaning up GPIO...")
+    GPIO.cleanup()
+    print("GPIO cleanup complete. LEDs are off.")
+
+def main():
+    """
+    Main function to run the RGB LED test sequence.
+    """
+    setup_gpio()
+
+    try:
+        print("Starting RGB LED test sequence...")
+        # Cycle through colors
+        colors = {
+            "Red":    (True, False, False),  # R on, G off, B off
+            "Green":  (False, True, False),  # R off, G on, B off
+            "Blue":   (False, False, True),  # R off, G off, B on
+            "White":  (True, True, True),    # All on (mixes to white)
+        }
+        while True:
+            turn_on_color(True,False,False)
+
+
+    except KeyboardInterrupt:
+        print("\nTest interrupted by user.")
+    finally:
+        cleanup_gpio()
+
+if __name__ == "__main__":
+    main()
+</code></pre>
+### Optical Rotary Encoder Test Code
+<pre style="background:#fdfdfd; border:none; height:40pc"><code class = "language-python">import RPi.GPIO as GPIO
+##speed encoder code
+import RPi.GPIO as GPIO
+import time
+import turtle
+import math
+
+# --- Configuration Constants ---
+# GPIO Pins for LM393 Speed Modules (BCM numbering)
+# Connect the OUT pin of your left LM393 to this GPIO
+LM393_LEFT_PIN = 20
+# Connect the OUT pin of your right LM393 to this GPIO
+LM393_RIGHT_PIN = 21
+
+# Encoder and Robot Physical Parameters (MUST BE CALIBRATED FOR YOUR ROBOT)
+# Number of slots/interruptions per full rotation of the encoder disk
+PULSES_PER_ROTATION = 20 #My encoder has 20 slots
+# Circumference of your robot's drive wheels in centimeters
+WHEEL_CIRCUMFERENCE_CM = 7.54 # Example: for a 6.36 cm diameter wheel (pi * 6.36)
+# Distance between the centers of your robot's left and right drive wheels in centimeters
+WHEEL_BASE_CM = 11.28 # Example: distance between wheel centers
+
+# Turtle Graphics Scaling
+# This factor converts calculated movement in cm to turtle pixels.
+# Adjust this to make the path drawing fit your screen well.
+CM_TO_PIXEL_SCALE = 5.0 # 1 cm in real world = 5 pixels on turtle screen
+UPDATE_INTERVAL_SECONDS = 0.05 # How often to update turtle position (e.g., 20 times per second)
+
+# --- Global Variables for Pulse Counting ---
+left_pulse_count = 0
+right_pulse_count = 0
+last_update_time = time.time() # Time of the last speed calculation/turtle update
+
+# --- GPIO Setup ---
+def setup_gpio():
+    """
+    Sets up the GPIO mode and initializes the LM393 input pins.
+    Attaches interrupt event detection for pulse counting.
+    """
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False) # Disable warnings for already set pins
+
+    # Set up LM393 pins as inputs with a pull-up resistor
+    # The LM393 output is typically open-collector, so pull-up is often needed.
+    GPIO.setup(LM393_LEFT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(LM393_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+    # Add event detection for falling edges (when the IR beam is interrupted)
+    # The bouncetime parameter helps debounce the signal from the sensor.
+    GPIO.add_event_detect(LM393_LEFT_PIN, GPIO.FALLING, callback=left_pulse_callback, bouncetime=5)
+    GPIO.add_event_detect(LM393_RIGHT_PIN, GPIO.FALLING, callback=right_pulse_callback, bouncetime=5)
+
+    print("GPIO setup complete. LM393 sensors ready.")
+
+# --- Pulse Counting Callbacks ---
+def left_pulse_callback(channel):
+    """Callback function for left LM393 sensor pulse."""
+    global left_pulse_count
+    left_pulse_count += 1
+
+def right_pulse_callback(channel):
+    """Callback function for right LM393 sensor pulse."""
+    global right_pulse_count
+    right_pulse_count += 1
+
+# --- Turtle Graphics Setup ---
+def setup_turtle():
+    """Initializes the turtle graphics window and drawing turtle."""
+    screen = turtle.Screen()
+    screen.setup(width=800, height=600)
+    screen.bgcolor("lightgray")
+    screen.title("Robot Path Tracker")
+    screen.tracer(0) # Turn off screen updates for smoother animation
+
+    # Create the drawing turtle
+    path_turtle = turtle.Turtle()
+    path_turtle.shape("arrow")
+    path_turtle.color("blue")
+    path_turtle.penup()
+    path_turtle.goto(0, 0) # Start at the center of the screen
+    path_turtle.pendown()
+    path_turtle.speed(0) # Fastest speed for drawing
+
+    # Create a small turtle to represent the robot's current position and heading
+    robot_marker = turtle.Turtle()
+    robot_marker.shape("triangle")
+    robot_marker.color("red")
+    robot_marker.penup()
+    robot_marker.goto(0, 0)
+    robot_marker.setheading(90) # Point upwards initially
+    robot_marker.shapesize(stretch_wid=1.5, stretch_len=1.5)
+
+    return screen, path_turtle, robot_marker
+
+# --- Main Robot Path Tracking Logic ---
+def main():
+    global left_pulse_count, right_pulse_count, last_update_time
+
+    setup_gpio()
+    screen, path_turtle, robot_marker = setup_turtle()
+
+    print("Starting robot path tracking. Move your motors to see the path.")
+    print("Press Ctrl+C in the terminal to stop.")
+
+    try:
+        while True:
+            current_time = time.time()
+            time_delta = current_time - last_update_time
+
+            if time_delta >= UPDATE_INTERVAL_SECONDS:
+                # Calculate pulses per second for each wheel
+                left_pps = left_pulse_count / time_delta
+                right_pps = right_pulse_count / time_delta
+
+                # Reset pulse counts for the next interval
+                left_pulse_count = 0
+                right_pulse_count = 0
+                last_update_time = current_time
+
+                # Convert pulses per second to linear speed in cm/s
+                # rotations_per_second = pulses_per_second / PULSES_PER_ROTATION
+                # linear_speed_cm_s = rotations_per_second * WHEEL_CIRCUMFERENCE_CM
+                left_speed_cm_s = (left_pps / PULSES_PER_ROTATION) * WHEEL_CIRCUMFERENCE_CM
+                right_speed_cm_s = (right_pps / PULSES_PER_ROTATION) * WHEEL_CIRCUMFERENCE_CM
+
+                # Calculate distance moved by each wheel in this time_delta
+                dist_moved_left = left_speed_cm_s * time_delta
+                dist_moved_right = right_speed_cm_s * time_delta
+
+                # --- Differential Drive Kinematics for Turtle Movement ---
+                # Calculate average forward movement
+                avg_forward_dist = (dist_moved_left + dist_moved_right) / 2.0
+
+                # Calculate angular change (turning)
+                # Angle in radians = (distance_right - distance_left) / wheel_base
+                # Convert radians to degrees for turtle
+                if WHEEL_BASE_CM > 0: # Avoid division by zero
+                    angular_change_rad = (dist_moved_right - dist_moved_left) / WHEEL_BASE_CM
+                    angular_change_deg = math.degrees(angular_change_rad)
+                else:
+                    angular_change_deg = 0
+
+                # Update robot marker's heading and position
+                robot_marker.right(angular_change_deg) # Turtle's right is clockwise
+                robot_marker.forward(avg_forward_dist * CM_TO_PIXEL_SCALE)
+
+                # Make the path_turtle follow the robot_marker
+                path_turtle.goto(robot_marker.position())
+                path_turtle.setheading(robot_marker.heading())
+
+                screen.update() # Update the turtle screen
+
+            time.sleep(0.001) # Small delay to prevent busy-waiting
+
+    except KeyboardInterrupt:
+        print("\nProgram interrupted by user.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        print("Cleaning up GPIO and closing turtle window...")
+        GPIO.cleanup() # Clean up all GPIO settings
+        turtle.bye()   # Close the turtle graphics window
+        print("Cleanup complete. Exiting.")
+
+if __name__ == "__main__":
+    main()
+</code></pre>
+
+
 # Third Milestone
 
 
