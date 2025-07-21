@@ -29,7 +29,7 @@ For my next steps, I want to try to impliment obstacle detection, so that when t
 
 ## Code
 
-###LED testing
+### LED testing
 <pre style="background:#fdfdfd; border:none; height:40pc"><code class = "language-python">import RPi.GPIO as GPIO
 import time
 
@@ -291,7 +291,9 @@ One challenge I faced was that if the ball was not in the frame, the robot would
 ## Next Steps
 For my next steps, I want to have a map of the robots movements to be drawn as it moves. I plan on doing this using turtle, a drawing library in python, and using an IMU(inertial measurement unit) which will be able to give the real direction of the robot.
 
-## Ball Tracking Code
+## Code
+
+### Ball Tracking Code
 <pre style="background:#fdfdfd; border:none; height:40pc"><code class = "language-python">
 #PYTHON
 import cv2
@@ -651,7 +653,7 @@ My next steps will be to mount everything to the drive base, and to write code t
 
 ## Test Codes
 
-Ultrasonic Sensor test code :
+### Ultrasonic Sensor Test Code
 <pre style="background:#fdfdfd; border:none; height:40pc">
 #PYTHoN
 import RPi.GPIO as GPIO
@@ -713,9 +715,11 @@ except KeyboardInterrupt:
 finally:
     GPIO.cleanup()
     print("GPIO cleanup complete. Program terminated.")
-```
-Motor Testing Code : 
-```python
+</pre>
+
+    
+### Motor Testing Code    
+<pre style="background:#fdfdfd; border:none; height:40pc">
 import RPi.GPIO as GPIO
 import cv2
 import numpy as np
@@ -788,7 +792,7 @@ finally:
     print("GPIO cleanup complete. Program terminated.")
 </pre>
 
-Color Mask Code:
+### Color Mask Test
 <pre style="background:#fdfdfd; border:none; height:40pc">
 #Python
 import cv2
