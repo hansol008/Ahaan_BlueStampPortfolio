@@ -904,6 +904,7 @@ Looking ahead, my next big milestone is to build the actual drive base of the ro
 ```python
 libcamera-hello -t 0
 ```
+This code opens the camera, and sets the time the window is open to 0, keeping it open until the terminal is closed.
 
 
 
