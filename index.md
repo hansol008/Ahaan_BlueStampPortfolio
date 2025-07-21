@@ -9,6 +9,16 @@ I am building a robot that can follow a red ball. Using a Raspberry Pi, Pi Camer
 <img src="AhaanP2.png" width="350" height="400">
 
 
+# Modification
+
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/dG4RzouqRRM?si=xOUIJ8tTwF8eBGPl" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+## Summary
+For my modifications, my goal was to add a status LED to show wether the robot can see the ball or not, and to create a real time map of the robots movement. First, with the status LED, I had to add an RGB LED to my breadboard. In a RGB LED, there are seperate connection points for each color. The blue and green connection points take 3.3V of power, while the red takes 2.2V. To avoid burning my LED, I added voltage dividers for all connections. I had a 165 ohm resistor each for the green and blue, but the red needed more. For this, I used a 22 Ohm resistor, 75 ohm resistor and a 110 Ohm resistor. I found these values by solving for the output voltage knowing that 5V came in, and I had to output 0V. After setting up the circut for the RGB LED, I had to connect each color to a GPIO pin. To get the LED to work, I had to set up a method that turns on all the colors at the same time, which makes the LED shine white light. By changing which colors turn on, you can change the color of the LED.
+
+For my second modification, I decicded to create a real time map of the robots movement. I originally wanted to use an MPU6050, which is a type of IMU, or inertial measurement unit. The MPU6050 has a gyroscope and accelerometer, which is what I was planning to use for my mapping feature. After coding test code for the MPU6050, I kept having a problem that threw off the angle reading of the MPU. After this problem, I decided to switch to use two optical rotary encoder's to accurately display the movement of the robot. An optical rotary encoder is a sensor that converts rotation into electrical signals using light. It tracks the position, speed, and direction of a rotating encoder disk. The encoder disk is a wheel with periodic holes, which periodically break the lights connection, counting it as one tick. Using the ticks, and which motors are moving, the optical rotatry encoders are able to map the movement of the robot based on the motor's movement. To make sure the optical rotary encoder can accurately replicate the real life distance the robot moves, I had to input the circumfrence of the encoder disk and the distance between the wheels so that the optical rotary encoder can accurately convert the rotations to centimeters. 
+
 # Third Milestone
 
 
@@ -73,8 +83,8 @@ MOTOR_PINS = {
     "right_e": 23, # RIGHT Motor Enable (or Forward based on H-bridge setup)
 }
 
-# LED Pins
-LED_SEARCH = 18
+#  Pins
+_SEARCH = 18
 LED_PARKED = 5
 
 # --- GPIO Setup ---
