@@ -274,7 +274,7 @@ if __name__ == "__main__":
 </code></pre>
 
 ### Map Fully Implemented
-<img src="mapshow.png" width="200" height="200">
+<img src="mapshow.png" width="700" height="410">
 
 
 # Third Milestone
