@@ -12,7 +12,7 @@ I am building a robot that can follow a red ball. Using a Raspberry Pi, Pi Camer
 # Modification
 
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/dG4RzouqRRM?si=xOUIJ8tTwF8eBGPl" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/dG4RzouqRRM?si=_-29_MQwTqMx3ldi" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Summary
 For my modifications, my goal was to add a status LED to show wether the robot can see the ball or not, and to create a real time map of the robots movement. First, with the status LED, I had to add an RGB LED to my breadboard. In a RGB LED, there are seperate connection points for each color. The blue and green connection points take 3.3V of power, while the red takes 2.2V. To avoid burning my LED, I added voltage dividers for all connections. I had a 165 ohm resistor each for the green and blue, but the red needed more. For this, I used a 22 Ohm resistor, 75 ohm resistor and a 110 Ohm resistor. I found these values by solving for the output voltage knowing that 5V came in, and I had to output 0V. After setting up the circut for the RGB LED, I had to connect each color to a GPIO pin. To get the LED to work, I had to set up a method that turns on all the colors at the same time, which makes the LED shine white light. By changing which colors turn on, you can change the color of the LED.
@@ -277,7 +277,7 @@ if __name__ == "__main__":
 # Third Milestone
 
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/FoBqtvqutC4?si=Kx8xMMg17BJIcstW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/FoBqtvqutC4?si=Z52UnqMzllopgp5G" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Summary
 For my third milestone, I needed to mount all the components I showed in the previous milestone onto the drive base. I also made code that combined the functionality of each component to track the ball.
@@ -635,8 +635,7 @@ if __name__ == "__main__":
 
 # Second Milestone
 
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/O2dyLsmRVgA?si=IcNODJyqyDdQhVPl" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/O2dyLsmRVgA?si=8CGNCj5WeCM3MmW2" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Summary
 For my second milestone, I had to connect all the different components and run some test code to verify their functionality. First, I coded the Picamera testing code to ensure the camera could run a live feed through Python code, rather than the terminal, which is what I had done for the first milestone. I also assembled the drivebase, which consisted of two motors, a switch, and a battery pack. I soldered wires to the motor and connected the other end to the H-bridge. An h bridge is a board that controls the direction of current for two terminal components. Two terminal components are components with a current in terminal and a current out terminal. Some of the two-terminal devices that I am using are motors and the battery pack. I hooked up the H-bridge to the Raspberry Pi by connecting it to the GPIO pins(General purpose in/output pins). This lets the Raspberry Pi give code to the motors and control them. I wrote code to test the motors and ran them off the Raspberry Pi. My motors are going to be used to move the robot towards the ball.
@@ -887,8 +886,7 @@ Color Mask Result :
 
 # First Milestone
 
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/4aHEpxQXCT8?si=oDebvNL3SYIfXqwK" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/4aHEpxQXCT8?si=otk2I4rfrD0pvshA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Summary
 I've made some good progress on the technical side. I successfully installed the Raspberry Pi OS onto a 32 GB card. That was a bit of a hiccup at first because I accidentally installed the Mac version, so I had to reset the SD card and reinstall it. After that, I got the camera installed on the Raspberry Pi. This camera is important because it's what the robot will use to see its surroundings, find the ball, and then move toward it. I'm using the lib camera command to view the live feed, which is run in the Raspberry Pi terminal.
