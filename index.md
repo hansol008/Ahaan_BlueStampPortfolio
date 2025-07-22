@@ -932,7 +932,7 @@ The other Resistor before the GPIO wire is 1K Ohms
 
 
 # Code
-Here's where you'll put your code. The syntax below places it into a block of code. Follow the guide [here]([url](https://www.markdownguide.org/extended-syntax/)) to learn how to customize it to your project needs. 
+Here is the final code that was used during demo night. All pins are as displayed in the Schematic.
 <pre style="background:#fdfdfd; border:none; height:40pc">
 # v 2.0 (working real time mapping)
 import RPi.GPIO as GPIO
