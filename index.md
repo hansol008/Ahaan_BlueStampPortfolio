@@ -930,23 +930,409 @@ The other Resistor before the GPIO wire is 1K Ohms
 
 
 
-<!--
+
 # Code
 Here's where you'll put your code. The syntax below places it into a block of code. Follow the guide [here]([url](https://www.markdownguide.org/extended-syntax/)) to learn how to customize it to your project needs. 
+<pre style="background:#fdfdfd; border:none; height:40pc">
+# v 2.0 (working real time mapping)
+import RPi.GPIO as GPIO
+import time
+import turtle
+import math
+import cv2
+import numpy as np
+from picamera2 import Picamera2
 
-```c++
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
-  Serial.println("Hello World!");
+# Configuration Constants
+# GPIO Pins for LM393 Speed Modules (BCM numbering)
+LM393_LEFT_PIN = 25
+LM393_RIGHT_PIN = 16
+
+# Encoder and Robot Physical Parameters
+PULSES_PER_ROTATION = 20
+WHEEL_CIRCUMFERENCE_CM = 7.54
+WHEEL_BASE_CM = 11.28
+
+# Turtle Graphics Scaling
+CM_TO_PIXEL_SCALE = 3
+UPDATE_INTERVAL_SECONDS = 0.05
+
+# Robot Behavior Constants
+SENSOR_PROXIMITY = 2
+REROUTING_PROXIMITY = 17.5
+DISTANCE_THRESHOLD = 2
+BACKUP_DIST = 12
+CENTER_TOLERANCE = 160
+TARGET_CONTOUR_AREA_MIN = 1750
+TARGET_CONTOUR_AREA_MAX = 110000
+PARKED_AREA_THRESHOLD = 10000
+
+# Movement Delays
+FORWARD_DELAY = 0.1
+TURN_DELAY = 0.03
+REVERSE_DELAY = 0.1
+REROUTE_TURN_DELAY = 0.1
+
+# GPIO Pin Assignments
+ULTRASONIC_PINS = {"front": {"trigger": 12, "echo": 26}}
+MOTOR_PINS = {
+    "left_b": 6,    # LEFT Motor Backward
+    "left_e": 5,    # LEFT Motor Enable
+    "right_b": 22,  # RIGHT Motor Backward
+    "right_e": 23,  # RIGHT Motor Enable
 }
+PIN_RED = 13
+PIN_GREEN = 17
+PIN_BLUE = 27
 
-void loop() {
-  // put your main code here, to run repeatedly:
+# Global Variables
+left_pulse_count = 0
+right_pulse_count = 0
+last_update_time = time.time()
+flag = 0    # 0: left turn for last location, 1: right turn
+flag_reroute = -1   # -1: No reroute, 0: reroute left, 1: reroute right
+total_distance_cm = 0 # New global variable for total distance
 
-}
-```
--->
+# GPIO and Motor Functions
+def setup_gpio():
+    """Sets up all GPIO pins including encoders, motors, and sensors."""
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+
+    # Setup encoder pins
+    GPIO.setup(LM393_LEFT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(LM393_RIGHT_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(LM393_LEFT_PIN, GPIO.FALLING, callback=left_pulse_callback, bouncetime=5)
+    GPIO.add_event_detect(LM393_RIGHT_PIN, GPIO.FALLING, callback=right_pulse_callback, bouncetime=5)
+
+    # Setup ultrasonic sensor pins
+    for sensor in ULTRASONIC_PINS.values():
+        GPIO.setup(sensor["trigger"], GPIO.OUT)
+        GPIO.setup(sensor["echo"], GPIO.IN)
+        GPIO.output(sensor["trigger"], False)
+
+    # Setup motor pins
+    for pin in MOTOR_PINS.values():
+        GPIO.setup(pin, GPIO.OUT)
+
+    # Setup RGB LED pins
+    GPIO.setup(PIN_RED, GPIO.OUT)
+    GPIO.setup(PIN_GREEN, GPIO.OUT)
+    GPIO.setup(PIN_BLUE, GPIO.OUT)
+
+    time.sleep(0.01)
+
+def left_pulse_callback(channel):
+    global left_pulse_count
+    left_pulse_count += 1
+
+def right_pulse_callback(channel):
+    global right_pulse_count
+    right_pulse_count += 1
+
+def turn_on_color(red_state, green_state, blue_state):
+    GPIO.output(PIN_RED, red_state)
+    GPIO.output(PIN_GREEN, green_state)
+    GPIO.output(PIN_BLUE, blue_state)
+
+def set_motor_state(motor_b_pin, motor_e_pin, state_b, state_e):
+    GPIO.output(motor_b_pin, state_b)
+    GPIO.output(motor_e_pin, state_e)
+
+def stop_motors():
+    set_motor_state(MOTOR_PINS["left_b"], MOTOR_PINS["left_e"], GPIO.LOW, GPIO.LOW)
+    set_motor_state(MOTOR_PINS["right_b"], MOTOR_PINS["right_e"], GPIO.LOW, GPIO.LOW)
+
+def execute_movement(action_name, left_b_state, left_e_state, right_b_state, right_e_state, delay):
+    set_motor_state(MOTOR_PINS["left_b"], MOTOR_PINS["left_e"], left_b_state, left_e_state)
+    set_motor_state(MOTOR_PINS["right_b"], MOTOR_PINS["right_e"], right_b_state, right_e_state)
+    time.sleep(delay)
+    stop_motors()
+    time.sleep(0.0001)
+
+def move_forward():
+    execute_movement("Forward", GPIO.HIGH, GPIO.LOW, GPIO.HIGH, GPIO.LOW, FORWARD_DELAY)
+
+def move_reverse():
+    execute_movement("Backward", GPIO.LOW, GPIO.HIGH, GPIO.LOW, GPIO.HIGH, REVERSE_DELAY)
+
+def turn_left():
+    execute_movement("Turning Left", GPIO.LOW, GPIO.LOW, GPIO.HIGH, GPIO.LOW, TURN_DELAY)
+
+def turn_right():
+    execute_movement("Turning Right", GPIO.HIGH, GPIO.LOW, GPIO.LOW, GPIO.LOW, TURN_DELAY)
+
+def sharp_left():
+    execute_movement("Sharp Left", GPIO.LOW, GPIO.HIGH, GPIO.HIGH, GPIO.LOW, REROUTE_TURN_DELAY)
+
+def sharp_right():
+    execute_movement("Sharp Right", GPIO.HIGH, GPIO.LOW, GPIO.LOW, GPIO.HIGH, REROUTE_TURN_DELAY)
+
+# Sensor Functions
+def get_sonar_distance(trigger_pin, echo_pin, timeout=0.1):
+    GPIO.output(trigger_pin, True)
+    time.sleep(0.00001)
+    GPIO.output(trigger_pin, False)
+
+    pulse_start = time.time()
+    pulse_end = time.time()
+
+    start_time = time.time()
+    while GPIO.input(echo_pin) == 0:
+        pulse_start = time.time()
+        if time.time() - start_time > timeout:
+            return -1
+
+    end_time = time.time()
+    while GPIO.input(echo_pin) == 1:
+        pulse_end = time.time()
+        if time.time() - end_time > timeout:
+            return -1
+
+    pulse_duration = pulse_end - pulse_start
+    distance = (pulse_duration * 34300) / 2
+    return round(distance, 2)
+
+def all_clear(distances):
+    return all(d > SENSOR_PROXIMITY for d in distances.values())
+
+# Vision Functions
+def segment_colour(frame):
+    hsv_roi = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lower_red = np.array([150, 140, 1])
+    upper_red = np.array([190, 255, 255])
+    mask = cv2.inRange(hsv_roi, lower_red, upper_red)
+    kern_dilate = np.ones((8, 8), np.uint8)
+    kern_erode = np.ones((3, 3), np.uint8)
+    mask = cv2.erode(mask, kern_erode)
+    mask = cv2.dilate(mask, kern_dilate)
+    cv2.imshow('Red Mask', mask)
+    return mask
+
+def find_blob(blob_mask):
+    contours, _ = cv2.findContours(blob_mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    largest_contour_area = 0
+    bounding_rect = (0, 0, 2, 2)
+
+    if contours:
+        largest_contour = max(contours, key=cv2.contourArea)
+        largest_contour_area = cv2.contourArea(largest_contour)
+        bounding_rect = cv2.boundingRect(largest_contour)
+
+    return bounding_rect, largest_contour_area
+
+# Turtle Graphics Functions
+def setup_turtle():
+    screen = turtle.Screen()
+    screen.setup(width=800, height=600)
+    screen.bgcolor("lightgray")
+    screen.title("Robot Path Tracker")
+    screen.tracer(0)
+
+    path_turtle = turtle.Turtle()
+    path_turtle.shape("arrow")
+    path_turtle.color("blue") # Default color
+    path_turtle.penup()
+    path_turtle.goto(0, 0)
+    path_turtle.pendown()
+    path_turtle.speed(0)
+
+    robot_marker = turtle.Turtle()
+    robot_marker.shape("triangle")
+    robot_marker.color("red")
+    robot_marker.penup()
+    robot_marker.goto(0, 0)
+    robot_marker.setheading(90)
+    robot_marker.shapesize(stretch_wid=1.5, stretch_len=1.5)
+
+    distance_display_turtle = turtle.Turtle()
+    distance_display_turtle.hideturtle()
+    distance_display_turtle.penup()
+    distance_display_turtle.goto(0, 280) # Position to display distance
+    distance_display_turtle.color("black")
+
+    return screen, path_turtle, robot_marker, distance_display_turtle
+
+def get_wheel_directions():
+    """Simplified direction detection - replace with actual motor state if available"""
+    return 1, 1  # Default: both wheels moving forward (assuming forward movement for distance calc)
+
+def update_path_tracking(screen, path_turtle, robot_marker, distance_display_turtle, is_following_ball):
+    global left_pulse_count, right_pulse_count, last_update_time, total_distance_cm
+
+    current_time = time.time()
+    time_delta = current_time - last_update_time
+
+    if time_delta >= UPDATE_INTERVAL_SECONDS:
+        left_pps_raw = left_pulse_count / time_delta
+        right_pps_raw = right_pulse_count / time_delta
+        left_pulse_count = 0
+        right_pulse_count = 0
+        last_update_time = current_time
+
+        left_dir, right_dir = get_wheel_directions()
+        left_speed_cm_s = (left_pps_raw / PULSES_PER_ROTATION) * WHEEL_CIRCUMFERENCE_CM * left_dir
+        right_speed_cm_s = (right_pps_raw / PULSES_PER_ROTATION) * WHEEL_CIRCUMFERENCE_CM * right_dir
+
+        dist_moved_left = left_speed_cm_s * time_delta
+        dist_moved_right = right_speed_cm_s * time_delta
+
+        avg_forward_dist = (dist_moved_left + dist_moved_right) / 2.0
+        total_distance_cm += abs(avg_forward_dist) # Accumulate absolute distance
+
+        if WHEEL_BASE_CM > 0:
+            angular_change_deg = math.degrees((dist_moved_right - dist_moved_left) / WHEEL_BASE_CM)
+        else:
+            angular_change_deg = 0
+
+        # Change line color based on robot state
+        if is_following_ball:
+            path_turtle.pencolor("green")
+        else:
+            path_turtle.pencolor("red")
+
+        robot_marker.right(angular_change_deg)
+        robot_marker.forward(avg_forward_dist * CM_TO_PIXEL_SCALE)
+        path_turtle.goto(robot_marker.position())
+        path_turtle.setheading(robot_marker.heading())
+
+        # Update distance display
+        distance_display_turtle.clear()
+        distance_display_turtle.write(f"Distance: {total_distance_cm:.2f} cm", align="center", font=("Arial", 16, "normal"))
+
+        screen.update()
+
+# Main Program
+def main():
+    global flag, flag_reroute
+
+    setup_gpio()
+    picam2 = Picamera2()
+    picam2_config = picam2.create_preview_configuration(
+        main={"format": 'XRGB8888', "size": (640, 480)},
+        raw={"size": (1640, 1232)}
+    )
+    picam2.configure(picam2_config)
+    picam2.start()
+    time.sleep(2)
+
+    screen, path_turtle, robot_marker, distance_display_turtle = setup_turtle()
+
+    try:
+        while True:
+            frame = picam2.capture_array()
+            height, width, _ = frame.shape
+
+            mask_red = segment_colour(frame)
+            loct, area = find_blob(mask_red)
+            x, y, w, h = loct
+
+            distances = {
+                "front": get_sonar_distance(ULTRASONIC_PINS["front"]["trigger"], ULTRASONIC_PINS["front"]["echo"]),
+            }
+
+            for key in distances:
+                if distances[key] == -1:
+                    distances[key] = 999
+
+           # print(f"dC: {distances['front']:.1f} cm")
+            #print(f"Flag: {flag}, Reroute Flag: {flag_reroute}")
+            #print(f"Detected Area: {area}")
+
+            found_object = False
+            center_x = 0
+            if TARGET_CONTOUR_AREA_MIN < area < TARGET_CONTOUR_AREA_MAX:
+                found_object = True
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                center_x = x + (w // 2)
+                cv2.circle(frame, (int(center_x), int(y + (h // 2))), 3, (0, 110, 255), -1)
+                cv2.putText(frame, f"Area: {area}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+
+            is_robot_following = False # Flag to determine line color for turtle
+
+            if distances["front"] < BACKUP_DIST:
+                while distances["front"] < BACKUP_DIST:
+                    move_reverse()
+                    distances["front"] = get_sonar_distance(
+                        ULTRASONIC_PINS["front"]["trigger"],
+                        ULTRASONIC_PINS["front"]["echo"]
+                    )
+                    if distances["front"] == -1:
+                        distances["front"] = 999
+                        break
+
+            if found_object:
+               # print("Red object found.")
+                turn_on_color(False, False, True)
+                is_robot_following = True # Robot is following the ball
+
+                if distances["front"] < DISTANCE_THRESHOLD:
+                    stop_motors()
+                    turn_on_color(False, True, False)
+                    cv2.putText(frame, "PARKED (TOO CLOSE)", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                else:
+                    if distances["front"] > SENSOR_PROXIMITY:
+                        frame_center_x = width // 2
+                        if center_x < frame_center_x - CENTER_TOLERANCE:
+                            flag = 0
+                            turn_left()
+                            cv2.putText(frame, "TURNING LEFT", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                        elif center_x > frame_center_x + CENTER_TOLERANCE:
+                            flag = 1
+                            turn_right()
+                            cv2.putText(frame, "TURNING RIGHT", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                        else:
+                            move_forward()
+                            cv2.putText(frame, "MOVING FORWARD", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                            flag = 0 if center_x < width // 2 else 1
+                    else:
+                        stop_motors()
+                        turn_on_color(False, False, False)
+                        cv2.putText(frame, "OBSTACLE DETECTED", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
+
+                        if distances["front"] < SENSOR_PROXIMITY and area >= PARKED_AREA_THRESHOLD:
+                            stop_motors()
+                            turn_on_color(False, True, False)
+                            cv2.putText(frame, "PARKED (FRONT OBSTACLE)", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                        else:
+                            move_reverse()
+                            cv2.putText(frame, "REVERSING FROM OBSTACLE", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
+            else:
+                turn_on_color(True, False, False)
+                #print("Red object not found or out of size range. Searching...")
+                stop_motors()
+                cv2.putText(frame, "SEARCHING", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                is_robot_following = False # Robot is searching
+                if flag == 0:
+                    turn_left()
+                else:
+                    turn_right()
+                time.sleep(0.05)
+
+            cv2.imshow("Robot View", frame)
+            update_path_tracking(screen, path_turtle, robot_marker, distance_display_turtle, is_robot_following)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        print("Releasing resources and cleaning up...")
+        stop_motors()
+        turn_on_color(False, False, False)
+        picam2.stop()
+        picam2.close()
+        cv2.destroyAllWindows()
+        GPIO.cleanup()
+        turtle.bye()
+        print("Application closed.")
+
+if __name__ == "__main__":
+    main()
+</pre>
+
+
 # Bill of Materials
 <!--
 Here's where you'll list the parts in your project. To add more rows, just copy and paste the example rows below.
