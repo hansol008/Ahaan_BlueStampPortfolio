@@ -1366,15 +1366,20 @@ Don't forget to place the link of where to buy each component inside the quotati
 | Item Name | What the item is used for | $Price | <a href="https://www.amazon.com/Arduino-A000066-ARDUINO-UNO-R3/dp/B008GRTSV6/"> Link </a> |
 -->
 
-<!--
-# Other Resources/Examples
-One of the best parts about Github is that you can view how other people set up their own work. Here are some past BSE portfolios that are awesome examples. You can view how they set up their portfolio, and you can view their index.md files to understand how they implemented different portfolio components.
-- [Example 1](https://trashytuber.github.io/YimingJiaBlueStamp/)
-- [Example 2](https://sviatil0.github.io/Sviatoslav_BSE/)
-- [Example 3](https://arneshkumar.github.io/arneshbluestamp/)
 
-To watch the BSE tutorial on how to create a portfolio, click here.
--->
+# Other Resources
+
+- [Gemini](https://gemini.google.com)
+- [DeepSeek](https://chat.deepseek.com)
+- [GitHub - Arijit1080](https://github.com/Arijit1080/mpu6050-with-Raspberry-Pi)
+- [Adafruit Forums](https://learn.adafruit.com/mpu6050-6-dof-accelerometer-and-gyro/python-and-circuitpython)
+- [pypi.org](https://pypi.org/project/mpu6050/)
+- [Shillehtek](https://shillehtek.com/blogs/news/how-to-calibrate-mpu6050?utm_source=youtube&utm_medium=product_shelf)
+- [GitHub - Shillehtek](https://github.com/shillehbean/youtube-channel/blob/main/imu.py)
+- [Raspberry Pi Forums](https://forums.raspberrypi.com/viewtopic.php?t=279956)
+- [GitHub - robinfays12](https://github.com/robinfays12/engineering_life/blob/master/Raspberry%20Bookworm/cam.py)
+
+
 # Starter Project - Weevil Eye
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/9kMi62yegL4?si=SjV1ctFakXZa0eug" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
